@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "title": "Printer not working",
+    "user": "John Doe",
+    "department": "IT",
+    "status": "Pending",
+    "priority": "High",
+    "date": "2023-07-10"
+  },
+  {
+    "id": 2,
+    "title": "AC not cooling",
+    "user": "Jane Smith",
+    "department": "Facilities",
+    "status": "In Progress",
+    "priority": "Medium",
+    "date": "2023-07-09"
+  },
+  {
+    "id": 3,
+    "title": "Salary not credited",
+    "user": "Alice Brown",
+    "department": "HR",
+    "status": "Resolved",
+    "priority": "Urgent",
+    "date": "2023-07-08"
+  },
+  {
+    "id": 4,
+    "title": "Network downtime",
+    "user": "Bob Lee",
+    "department": "IT",
+    "status": "Rejected",
+    "priority": "High",
+    "date": "2023-07-07"
+  },
+  {
+    "id": 5,
+    "title": "Broken chair",
+    "user": "Charlie Green",
+    "department": "Facilities",
+    "status": "Pending",
+    "priority": "Low",
+    "date": "2023-07-06"
+  },
+  {
+    "id": 6,
+    "title": "Software installation",
+    "user": "Diana Prince",
+    "department": "IT",
+    "status": "In Progress",
+    "priority": "Medium",
+    "date": "2023-07-05"
+  }
+] 

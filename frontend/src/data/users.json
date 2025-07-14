@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "John Doe", "role": "Employee", "department": "IT" },
+  { "id": 2, "name": "Jane Smith", "role": "Employee", "department": "Facilities" },
+  { "id": 3, "name": "Alice Brown", "role": "Employee", "department": "HR" },
+  { "id": 4, "name": "Bob Lee", "role": "Employee", "department": "IT" },
+  { "id": 5, "name": "Charlie Green", "role": "Employee", "department": "Facilities" },
+  { "id": 6, "name": "Diana Prince", "role": "Employee", "department": "IT" }
+] 
