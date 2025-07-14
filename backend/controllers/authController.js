@@ -1,6 +1,6 @@
 import { getModels } from '../config/db.js';
 import { generateToken } from '../utils/jwt.js';
-import { Op } from 'sequelize';
+import bcrypt from 'bcryptjs';
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -19,7 +19,7 @@ export const register = async (req, res) => {
       });
     }
 
-    // Create new user
+    // Create new user (password will be hashed by model hook)
     const user = await User.create({
       name,
       email,
@@ -53,11 +53,13 @@ export const register = async (req, res) => {
 // @access  Public
 export const login = async (req, res) => {
   try {
-    const { User } = getModels();
+    const { User, Log } = getModels();
     const { email, password } = req.body;
 
     // Check if user exists
     const user = await User.findOne({ where: { email } });
+    console.log('Login attempt for email:', email);
+    console.log('User found:', user ? user.toJSON() : null);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -73,8 +75,11 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check password
-    const isPasswordValid = await user.comparePassword(password);
+    // Check password using bcrypt
+    console.log('Password provided:', password);
+    console.log('Password hash in DB:', user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log('bcrypt.compare result:', isPasswordValid);
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
@@ -88,6 +93,16 @@ export const login = async (req, res) => {
 
     // Generate token
     const token = generateToken(user.id, user.role);
+
+    // Log the login action
+    if (Log && Log.createLog) {
+      await Log.createLog({
+        user: user.id,
+        action: 'LOGIN',
+        details: `${user.role === 'admin' ? 'Admin' : 'User'} logged in: ${user.email}`,
+        resource: { type: 'USER', id: user.id }
+      });
+    }
 
     res.json({
       success: true,
@@ -194,8 +209,8 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // Verify current password
-    const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+    // Verify current password using bcrypt
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isCurrentPasswordValid) {
       return res.status(400).json({
         success: false,
@@ -203,7 +218,7 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    // Update password
+    // Update password (will be hashed by model hook)
     user.password = newPassword;
     await user.save();
 

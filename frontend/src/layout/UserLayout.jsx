@@ -3,8 +3,12 @@ import { Outlet } from 'react-router-dom';
 import { Box, Container } from '@mui/material';
 import UserSidebar from '../components/Sidebar/UserSidebar';
 import UserHeader from '../components/Header/UserHeader';
+import { useAuth } from '../context/AuthContext';
 
 const UserLayout = () => {
+  const { user } = useAuth();
+  // Debug log
+  console.log('UserLayout user:', user);
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       <UserSidebar />

@@ -52,7 +52,7 @@ export default function Logs() {
       (log.details && log.details.toLowerCase().includes(search.toLowerCase()));
     const matchesRole = !roleFilter || (log.user && log.user.role === roleFilter);
     return matchesSearch && matchesRole;
-  }).reverse();
+  });
 
   const actionIcons = {
     'LOGIN': '🔐',
@@ -144,7 +144,7 @@ export default function Logs() {
                     </TableCell>
                   </TableRow>
                 ) : filteredLogs.map((log, idx) => (
-                  <TableRow key={log._id || idx} sx={{ background: idx % 2 === 1 ? '#fafbfc' : undefined }}>
+                  <TableRow key={log._id || log.id || idx} sx={{ background: idx % 2 === 1 ? '#fafbfc' : undefined }}>
                     <TableCell>{idx + 1}</TableCell>
                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatLogDate(log.timestamp || log.createdAt)}</TableCell>
                     <TableCell>{log.user?.name || 'Unknown'}</TableCell>
@@ -152,8 +152,8 @@ export default function Logs() {
                       <Chip label={log.user?.role === 'admin' ? 'Admin' : log.user?.role === 'user' ? 'User' : 'N/A'} color={log.user?.role === 'admin' ? 'primary' : log.user?.role === 'user' ? 'secondary' : 'default'} size="small" sx={{ textTransform: 'capitalize', fontWeight: 700 }} />
                     </TableCell>
                     <TableCell>
-                      <span style={{ marginRight: 6 }}>{actionIcons[log.action?.toUpperCase()] || '📝'}</span>
-                      {log.action}
+                      <span style={{ marginRight: 6 }}>{actionIcons[(log.action || '').toUpperCase()] || '📝'}</span>
+                      {log.friendlyAction || log.action}
                     </TableCell>
                     <TableCell>
                       <Button variant="outlined" size="small" onClick={() => handleViewDetails(log)} sx={{ fontWeight: 600, borderRadius: 2, px: 1.5, minWidth: 0, fontSize: 13, height: 28 }}>
@@ -175,7 +175,7 @@ export default function Logs() {
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 1 }}>
               <Box>
                 <Typography variant="body2" color="text.secondary"><b>Action:</b></Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}><span style={{ marginRight: 6 }}>{actionIcons[selectedLog.action?.toUpperCase()] || '📝'}</span>{selectedLog.action}</Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}><span style={{ marginRight: 6 }}>{actionIcons[(selectedLog.action || '').toUpperCase()] || '📝'}</span>{selectedLog.friendlyAction || selectedLog.action}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary"><b>Timestamp:</b></Typography>

@@ -26,18 +26,18 @@ export default function ComplaintsTable({ recentComplaints, statusMap, handleSta
         </TableHead>
         <TableBody>
           {recentComplaints.map((row) => (
-            <TableRow key={row._id}>
-              <TableCell sx={{ py: 1 }}>{row._id}</TableCell>
+            <TableRow key={row.id}>
+              <TableCell sx={{ py: 1 }}>{row.id}</TableCell>
               <TableCell sx={{ py: 1 }}>{row.title}</TableCell>
               <TableCell sx={{ py: 1 }}>{row.department}</TableCell>
               <TableCell sx={{ py: 1 }}>
                 <Select
-                  value={statusMap[row._id] || row.status}
-                  onChange={e => handleStatusChange(row._id, e.target.value)}
+                  value={statusMap[row.id] || row.status}
+                  onChange={e => handleStatusChange(row.id, e.target.value)}
                   size="small"
                   variant="outlined"
                   sx={{
-                    background: statusBgColors[statusMap[row._id] || row.status],
+                    background: statusBgColors[statusMap[row.id] || row.status],
                     color: '#222',
                     fontWeight: 600,
                     borderRadius: 2,
@@ -70,7 +70,7 @@ export default function ComplaintsTable({ recentComplaints, statusMap, handleSta
                   <IconButton color="primary" onClick={() => handleViewDetails(row)}>
                     <VisibilityIcon />
                   </IconButton>
-                  <IconButton color="error" onClick={() => handleDeleteComplaint(row._id)}>
+                  <IconButton color="error" onClick={() => handleDeleteComplaint(row.id)}>
                     <DeleteIcon />
                   </IconButton>
                 </Box>

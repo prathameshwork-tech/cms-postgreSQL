@@ -79,6 +79,16 @@ export default function UserSidebar() {
             </NavLink>
           ))}
         </List>
+        <NavLink
+          to="/user/account"
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          <SidebarItem
+            icon={<LogoutIcon />} // You can use a different icon for account management
+            label="Manage Account"
+            selected={location.pathname.startsWith('/user/account')}
+          />
+        </NavLink>
       </Box>
       <Box sx={{ width: '100%', px: 2, pb: 1, pt: 0 }}>
         <Button

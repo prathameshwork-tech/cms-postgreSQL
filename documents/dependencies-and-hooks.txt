@@ -4,74 +4,52 @@
 
 ### Core Dependencies
 - **React**: JavaScript library for building user interfaces
-  - Why: Provides component-based architecture, virtual DOM for efficient rendering
-  - Version: Latest (from Vite template)
-
 - **Vite**: Build tool and development server
-  - Why: Fast hot module replacement, optimized builds, modern development experience
-  - Version: Latest
+- **@mui/material**: Material UI React components
+- **@mui/icons-material**: Material UI icon set
+- **@emotion/react** & **@emotion/styled**: CSS-in-JS for MUI
+- **axios**: HTTP client for API calls
+- **react-router-dom**: Client-side routing
+- **react-hook-form**: Form handling and validation
+- **recharts**: Charting library for React
+- **react-toastify**: Toast notifications
+- **classnames**: Utility for conditionally joining classNames
+- **papaparse**: CSV parsing
+- **@headlessui/react**, **@heroicons/react**: UI primitives/icons (if used)
 
 ### Development Dependencies
-- **@types/react**: TypeScript definitions for React
-- **@types/react-dom**: TypeScript definitions for React DOM
-- **@vitejs/plugin-react**: Vite plugin for React support
+- **@vitejs/plugin-react**: Vite plugin for React
+- **eslint** and plugins: Code linting
+- **autoprefixer**, **postcss**: CSS tooling
+- **tailwindcss**: (Remove if not in use)
+- **@types/react**, **@types/react-dom**: TypeScript types (if using TS)
 
 ## BACKEND DEPENDENCIES
 
 ### Core Dependencies
-- **Express.js**: Web application framework for Node.js
-  - Why: Minimal and flexible, great for building APIs and web applications
-  - Version: Will be installed
+- **express**: Web application framework
+- **cors**: Cross-Origin Resource Sharing
+- **dotenv**: Environment variable management
+- **bcryptjs**: Password hashing
+- **jsonwebtoken**: JWT authentication
+- **sequelize**: ORM for PostgreSQL
+- **pg**, **pg-hstore**: PostgreSQL driver and hstore support
+- **body-parser**: Request body parsing
+- **express-validator**: Input validation
+- **sequelize-cli**: CLI for Sequelize
 
-- **CORS**: Cross-Origin Resource Sharing middleware
-  - Why: Allows frontend to communicate with backend across different origins
-  - Version: Will be installed
+### Development Dependencies
+- (Add nodemon, eslint, etc. if used)
 
-## REACT HOOKS (To be used)
+## REACT HOOKS IN USE
 
 ### Built-in Hooks
-- **useState**: For managing component state
-  - Why: Essential for reactive UI updates
+- **useState**, **useEffect**, **useContext**, **useRef**, **useCallback**, **useMemo**
 
-- **useEffect**: For side effects in functional components
-  - Why: Handle API calls, subscriptions, DOM manipulation
-
-- **useContext**: For sharing data across component tree
-  - Why: Avoid prop drilling, share global state
-
-- **useRef**: For accessing DOM elements and mutable values
-  - Why: Direct DOM access, storing mutable values
-
-- **useCallback**: For memoizing functions
-  - Why: Prevent unnecessary re-renders of child components
-
-- **useMemo**: For memoizing expensive calculations
-  - Why: Optimize performance by caching computed values
-
-### Custom Hooks (To be created)
+### Custom Hooks
 - **useAuth**: Authentication state management
-- **useApi**: API call management with loading/error states
-- **useLocalStorage**: Local storage management
-- **useForm**: Form state and validation management
-
-## ADDITIONAL DEPENDENCIES (To be added as needed)
-
-### Frontend
-- **React Router**: Client-side routing
-- **Axios**: HTTP client for API calls
-- **React Hook Form**: Form handling and validation
-- **React Query/TanStack Query**: Server state management
-- **Tailwind CSS**: Utility-first CSS framework
-- **React Icons**: Icon library
-
-### Backend
-- **MongoDB/Mongoose**: Database and ODM
-- **JWT**: JSON Web Tokens for authentication
-- **bcryptjs**: Password hashing
-- **multer**: File upload handling
-- **dotenv**: Environment variable management
-- **helmet**: Security middleware
-- **express-validator**: Input validation
+- **useComplaints**: Complaint data fetching and logic
+- **useUsers**: User data fetching and logic
 
 ## VERSION CONTROL
 - **Git**: Version control system
@@ -80,8 +58,8 @@
 ## DEVELOPMENT TOOLS
 - **ESLint**: Code linting
 - **Prettier**: Code formatting
-- **VS Code**: IDE with extensions
+- **VS Code**: IDE
 
 ---
-Last Updated: [Date will be updated as we progress]
-Notes: This document will be continuously updated as we add new dependencies and hooks to the project. 
+Last Updated: July 14, 2024
+Notes: This document reflects the current dependencies and hooks in use. Remove Tailwind if not present. Add any new custom hooks as they are created. 

@@ -31,6 +31,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useUsers } from '../../hooks/useUsers';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { usersAPI } from '../../utils/api';
 
 export default function Users() {
   const { user: currentUser } = useAuth();
@@ -48,7 +49,6 @@ export default function Users() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
     role: 'user',
     department: ''
   });
@@ -67,7 +67,6 @@ export default function Users() {
       setFormData({
         name: user.name,
         email: user.email,
-        password: '',
         role: user.role,
         department: user.department || ''
       });
@@ -76,7 +75,6 @@ export default function Users() {
       setFormData({
         name: '',
         email: '',
-        password: '',
         role: 'user',
         department: ''
       });
@@ -91,7 +89,6 @@ export default function Users() {
     setFormData({
       name: '',
       email: '',
-      password: '',
       role: 'user',
       department: ''
     });
@@ -111,12 +108,6 @@ export default function Users() {
       errors.email = 'Please enter a valid email';
     }
 
-    if (!editingUser && !formData.password.trim()) {
-      errors.password = 'Password is required for new users';
-    } else if (formData.password && formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -132,12 +123,8 @@ export default function Users() {
         department: formData.department
       };
 
-      if (formData.password) {
-        userData.password = formData.password;
-      }
-
       if (editingUser) {
-        const result = await updateUser(editingUser._id, userData);
+        const result = await updateUser(editingUser.id, userData);
         if (result.success) {
           handleCloseDialog();
         }
@@ -336,16 +323,6 @@ export default function Users() {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               error={!!formErrors.email}
               helperText={formErrors.email}
-              fullWidth
-            />
-            
-            <TextField
-              label={editingUser ? 'New Password (leave blank to keep current)' : 'Password'}
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              error={!!formErrors.password}
-              helperText={formErrors.password}
               fullWidth
             />
             

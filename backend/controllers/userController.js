@@ -1,11 +1,12 @@
-import User from '../models/User.js';
-import Log from '../models/Log.js';
+import { getModels } from '../config/db.js';
+import bcrypt from 'bcryptjs';
 
 // @desc    Get all users with filtering and pagination
 // @route   GET /api/users
 // @access  Private (Admin only)
 export const getAllUsers = async (req, res) => {
   try {
+    const { User } = getModels();
     const {
       page = 1,
       limit = 10,
@@ -17,31 +18,25 @@ export const getAllUsers = async (req, res) => {
     } = req.query;
 
     // Build filter object
-    const filter = {};
-    
-    if (role) filter.role = role;
-    if (department) filter.department = department;
-    
-    // Search functionality
+    const where = {};
+    if (role) where.role = role;
+    if (department) where.department = department;
     if (search) {
-      filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { department: { $regex: search, $options: 'i' } }
+      where[User.sequelize.Op.or] = [
+        { name: { [User.sequelize.Op.iLike]: `%${search}%` } },
+        { email: { [User.sequelize.Op.iLike]: `%${search}%` } },
+        { department: { [User.sequelize.Op.iLike]: `%${search}%` } }
       ];
     }
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const sort = { [sortBy]: sortOrder === 'desc' ? -1 : 1 };
-
-    const users = await User.find(filter)
-      .select('-password')
-      .sort(sort)
-      .skip(skip)
-      .limit(parseInt(limit));
-
-    const total = await User.countDocuments(filter);
-
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const order = [[sortBy, sortOrder.toUpperCase()]];
+    const { rows: users, count: total } = await User.findAndCountAll({
+      where,
+      attributes: { exclude: ['password'] },
+      order,
+      offset,
+      limit: parseInt(limit)
+    });
     res.json({
       success: true,
       data: users,
@@ -67,15 +62,16 @@ export const getAllUsers = async (req, res) => {
 // @access  Private (Admin only)
 export const getUserById = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
-
+    const { User } = getModels();
+    const user = await User.findByPk(req.params.id, {
+      attributes: { exclude: ['password'] }
+    });
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
-
     res.json({
       success: true,
       data: user
@@ -95,44 +91,36 @@ export const getUserById = async (req, res) => {
 // @access  Private (Admin only)
 export const createUser = async (req, res) => {
   try {
+    const { User, Log } = getModels();
     const { name, email, password, role, department } = req.body;
-
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({
         success: false,
         message: 'User with this email already exists'
       });
     }
-
-    const userData = {
+    const user = await User.create({
       name,
       email,
       password,
       role: role || 'user',
       department
-    };
-
-    const user = await User.create(userData);
-
-    // Log the action
-    await Log.createLog({
-      user: req.user._id,
-      action: 'CREATE_USER',
-      details: `Created user: ${name} (${email})`,
-      resource: {
-        type: 'USER',
-        id: user._id
-      }
     });
-
-    const userResponse = user.toJSON();
-
+    // Log the action
+    if (Log && Log.createLog) {
+      await Log.createLog({
+        user: req.user.id,
+        action: 'CREATE_USER',
+        details: `Created user: ${name} (${email})`,
+        resource: { type: 'USER', id: user.id }
+      });
+    }
     res.status(201).json({
       success: true,
       message: 'User created successfully',
-      data: userResponse
+      data: user.toJSON()
     });
   } catch (error) {
     console.error('Create user error:', error);
@@ -149,20 +137,18 @@ export const createUser = async (req, res) => {
 // @access  Private (Admin only)
 export const updateUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-
+    const { User, Log } = getModels();
+    const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
-
     const { name, email, role, department, isActive } = req.body;
-
     // Check if email is being changed and if it's already taken
     if (email && email !== user.email) {
-      const existingUser = await User.findOne({ email });
+      const existingUser = await User.findOne({ where: { email } });
       if (existingUser) {
         return res.status(400).json({
           success: false,
@@ -170,41 +156,23 @@ export const updateUser = async (req, res) => {
         });
       }
     }
-
-    const updateData = {
-      name,
-      email,
-      role,
-      department,
-      isActive
-    };
-
+    const updateData = { name, email, role, department, isActive };
     // Remove undefined values
-    Object.keys(updateData).forEach(key => 
-      updateData[key] === undefined && delete updateData[key]
-    );
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    ).select('-password');
-
+    Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
+    await user.update(updateData);
     // Log the action
-    await Log.createLog({
-      user: req.user._id,
-      action: 'UPDATE_USER',
-      details: `Updated user: ${updatedUser.name} (${updatedUser.email})`,
-      resource: {
-        type: 'USER',
-        id: updatedUser._id
-      }
-    });
-
+    if (Log && Log.createLog) {
+      await Log.createLog({
+        user: req.user.id,
+        action: 'UPDATE_USER',
+        details: `Updated user: ${user.name} (${user.email})`,
+        resource: { type: 'USER', id: user.id }
+      });
+    }
     res.json({
       success: true,
       message: 'User updated successfully',
-      data: updatedUser
+      data: user
     });
   } catch (error) {
     console.error('Update user error:', error);
@@ -221,36 +189,31 @@ export const updateUser = async (req, res) => {
 // @access  Private (Admin only)
 export const deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-
+    const { User, Log } = getModels();
+    const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
-
     // Prevent admin from deleting themselves
-    if (user._id.toString() === req.user._id.toString()) {
+    if (user.id === req.user.id) {
       return res.status(400).json({
         success: false,
         message: 'Cannot delete your own account'
       });
     }
-
-    await User.findByIdAndDelete(req.params.id);
-
+    await user.destroy();
     // Log the action
-    await Log.createLog({
-      user: req.user._id,
-      action: 'DELETE_USER',
-      details: `Deleted user: ${user.name} (${user.email})`,
-      resource: {
-        type: 'USER',
-        id: user._id
-      }
-    });
-
+    if (Log && Log.createLog) {
+      await Log.createLog({
+        user: req.user.id,
+        action: 'DELETE_USER',
+        details: `Deleted user: ${user.name} (${user.email})`,
+        resource: { type: 'USER', id: user.id }
+      });
+    }
     res.json({
       success: true,
       message: 'User deleted successfully'
@@ -270,19 +233,29 @@ export const deleteUser = async (req, res) => {
 // @access  Private (Admin only)
 export const getUserStats = async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const activeUsers = await User.countDocuments({ isActive: true });
-    const adminUsers = await User.countDocuments({ role: 'admin' });
-    const userUsers = await User.countDocuments({ role: 'user' });
+    const { User } = getModels();
 
-    const departmentStats = await User.aggregate([
-      {
-        $group: {
-          _id: '$department',
-          count: { $sum: 1 }
-        }
-      }
-    ]);
+    // Total users
+    const totalUsers = await User.count();
+    // Active users
+    const activeUsers = await User.count({ where: { isActive: true } });
+    // Admin users
+    const adminUsers = await User.count({ where: { role: 'admin' } });
+    // Regular users
+    const userUsers = await User.count({ where: { role: 'user' } });
+
+    // Department stats (group by department)
+    const departmentStatsRaw = await User.findAll({
+      attributes: [
+        'department',
+        [User.sequelize.fn('COUNT', User.sequelize.col('id')), 'count']
+      ],
+      group: ['department']
+    });
+    const departmentStats = departmentStatsRaw.map(row => ({
+      department: row.department,
+      count: parseInt(row.get('count'))
+    }));
 
     res.json({
       success: true,
@@ -302,5 +275,47 @@ export const getUserStats = async (req, res) => {
       message: 'Error fetching user statistics',
       error: error.message
     });
+  }
+};
+
+// Add a new controller function for admin password change
+export const adminChangePassword = async (req, res) => {
+  try {
+    console.log('adminChangePassword request body:', req.body);
+    const { User, Log } = getModels();
+    const adminId = req.user.id;
+    const admin = await User.findByPk(adminId);
+    if (!admin || admin.role !== 'admin') {
+      return res.status(403).json({ message: 'Forbidden: Admins only' });
+    }
+    const { userId, newPassword } = req.body;
+    if (!userId || !newPassword) {
+      return res.status(400).json({ message: 'User ID and new password are required' });
+    }
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // More debug output
+    console.log('User before password change:', user.toJSON());
+    user.set('password', newPassword);
+    user.changed('password', true);
+    console.log('Password before save (should be plain):', user.password);
+    await user.save();
+    console.log('User after save:', user.toJSON());
+    console.log('Password after save (should be hashed):', user.password);
+    // Log the password change
+    if (Log && Log.createLog) {
+      await Log.createLog({
+        user: adminId,
+        action: 'CHANGE_PASSWORD', // valid ENUM value
+        details: `Admin changed password for user ${userId}`,
+        resource: { type: 'USER', id: userId }
+      });
+    }
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Admin password change error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message, stack: error.stack });
   }
 }; 

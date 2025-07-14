@@ -1,300 +1,132 @@
-# PROJECT OVERVIEW - CMS SYSTEM
+# PROJECT OVERVIEW - COMPLAINT MANAGEMENT SYSTEM (CMS)
 
 ## PROJECT DESCRIPTION
-This is a full-stack Content Management System (CMS) built with React frontend and Node.js/Express backend. The system allows users to create, manage, and publish content with user authentication, role-based access control, and media management capabilities.
+This is a full-stack Complaint Management System (CMS) built with a React frontend and Node.js/Express backend. The system allows users to file, track, and manage complaints with user authentication, role-based dashboards, audit logging, and notification features. Admins can manage users, complaints, and view system logs. The backend uses PostgreSQL (via Sequelize ORM).
 
 ## SYSTEM ARCHITECTURE
 
-### Frontend (React + Vite)
-```
-frontend/
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── Layout/         # Layout components (Header, Sidebar, Footer)
-│   │   ├── Forms/          # Form components (Login, Register, Content forms)
-│   │   ├── UI/             # Basic UI components (Button, Input, Modal)
-│   │   └── Content/        # Content-specific components
-│   ├── pages/              # Page components
-│   │   ├── Dashboard/      # Main dashboard
-│   │   ├── Auth/           # Authentication pages
-│   │   ├── Content/        # Content management pages
-│   │   ├── Media/          # Media management pages
-│   │   └── Settings/       # Settings pages
-│   ├── hooks/              # Custom React hooks
-│   │   ├── useAuth.js      # Authentication state management
-│   │   ├── useApi.js       # API call management
-│   │   ├── useLocalStorage.js # Local storage management
-│   │   └── useForm.js      # Form state management
-│   ├── context/            # React Context providers
-│   │   ├── AuthContext.js  # Authentication context
-│   │   └── ThemeContext.js # Theme management
-│   ├── services/           # API services
-│   │   ├── authService.js  # Authentication API calls
-│   │   ├── contentService.js # Content API calls
-│   │   └── mediaService.js # Media API calls
-│   ├── utils/              # Utility functions
-│   │   ├── api.js          # API configuration
-│   │   ├── validation.js   # Form validation
-│   │   └── helpers.js      # Helper functions
-│   ├── styles/             # CSS/SCSS files
-│   └── App.js              # Main App component
-```
+### Frontend (React + Vite + MUI)
+- **React** (Vite, MUI, custom CSS)
+- **Routing:** react-router-dom
+- **Forms:** react-hook-form
+- **Charts:** recharts
+- **Notifications:** react-toastify
+- **State/Context:** React Context, custom hooks (useAuth, useComplaints, useUsers)
 
-### Backend (Node.js + Express)
-```
-backend/
-├── routes/                 # API route handlers
-│   ├── auth.js            # Authentication routes
-│   ├── content.js         # Content management routes
-│   ├── media.js           # Media upload routes
-│   └── users.js           # User management routes
-├── controllers/            # Business logic
-│   ├── authController.js   # Authentication logic
-│   ├── contentController.js # Content CRUD operations
-│   ├── mediaController.js  # Media upload/management
-│   └── userController.js   # User management
-├── models/                 # Data models
-│   ├── User.js            # User model
-│   ├── Content.js         # Content model
-│   └── Media.js           # Media model
-├── middleware/             # Custom middleware
-│   ├── auth.js            # Authentication middleware
-│   ├── validation.js      # Input validation
-│   └── upload.js          # File upload middleware
-├── config/                 # Configuration files
-│   ├── database.js        # Database configuration
-│   └── jwt.js             # JWT configuration
-├── utils/                  # Utility functions
-│   ├── validation.js      # Validation helpers
-│   └── helpers.js         # General helpers
-└── index.js               # Main server file
-```
+### Backend (Node.js + Express + Sequelize + PostgreSQL)
+- **Express** server
+- **Sequelize** ORM
+- **PostgreSQL** database
+- **JWT** authentication
+- **bcryptjs** for password hashing
+- **express-validator** for input validation
+- **dotenv** for environment variables
+- **cors** for CORS
+- **Audit logging** (logs table)
+- **Notification bell** (urgent complaints)
+- **File uploads** (if implemented)
 
 ## DATA FLOW
 
 ### 1. Authentication Flow
-```
 User Login/Register → Frontend Form → API Call → Backend Validation → 
 Database Check → JWT Token Generation → Response to Frontend → 
 Token Storage → Protected Route Access
-```
 
-### 2. Content Management Flow
-```
-User Creates Content → Frontend Form → API Call → Backend Validation → 
-Database Storage → Media Upload (if any) → Response to Frontend → 
-Content List Update → Real-time Updates
-```
+### 2. Complaint Management Flow
+User Files Complaint → Frontend Form → API Call → Backend Validation →
+Database Storage → (Optional: File Upload) → Response to Frontend →
+Complaint List Update → Notification Bell (for critical/urgent complaints)
 
-### 3. Media Upload Flow
-```
-User Uploads File → Frontend Form → API Call → Backend Validation → 
-File Processing → Storage (Local/Cloud) → Database Record → 
-Response to Frontend → Media Library Update
-```
+### 3. Audit Logging
+All key actions (login, complaint status change, user management) are logged in the logs table for admin review.
 
 ## COMPONENT RESPONSIBILITIES
 
 ### Frontend Components
-
-#### Layout Components
-- **Header**: Navigation, user menu, notifications
-- **Sidebar**: Main navigation menu, quick actions
-- **Footer**: Copyright, links, system status
-
-#### Authentication Components
-- **LoginForm**: User login with email/password
-- **RegisterForm**: User registration with validation
-- **PasswordReset**: Password recovery functionality
-- **AuthGuard**: Route protection for authenticated users
-
-#### Content Components
-- **ContentList**: Display all content with filtering/sorting
-- **ContentForm**: Create/edit content with rich text editor
-- **ContentPreview**: Live preview of content
-- **ContentCard**: Individual content item display
-
-#### Media Components
-- **MediaUpload**: Drag-and-drop file upload
-- **MediaLibrary**: Grid/list view of uploaded media
-- **MediaModal**: Preview and edit media details
-
-#### UI Components
-- **Button**: Reusable button with variants
-- **Input**: Form input with validation
-- **Modal**: Popup dialogs
-- **Table**: Data display with sorting/pagination
-- **Loading**: Loading states and spinners
+- **Header, Sidebar, Footer**: Navigation, user info, notifications
+- **Dashboard**: Overview of complaints, stats, charts
+- **Complaints Table/Details**: List, view, and manage complaints
+- **User Table/Details**: Admin user management
+- **Logs**: Admin audit log viewing
+- **Auth Pages**: Login, Register
+- **ProtectedRoute**: Route protection
+- **Custom Modals, Buttons, Tables**: UI primitives
 
 ### Backend Components
+- **Routes**: authRoutes, complaintRoutes, userRoutes, logRoutes
+- **Controllers**: authController, complaintController, userController, logController
+- **Models**: User, Complaint, Comment, Log (Sequelize, UUIDs, ENUMs, JSONB)
+- **Middleware**: auth, errorHandler, logger
+- **Services/Utils**: dbService, jwt, validators
 
-#### Route Handlers
-- **Auth Routes**: Login, register, logout, password reset
-- **Content Routes**: CRUD operations for content
-- **Media Routes**: Upload, delete, list media files
-- **User Routes**: User management (admin only)
+## API ENDPOINTS (Key Examples)
+- `POST /api/auth/register` - Register user
+- `POST /api/auth/login` - Login
+- `GET /api/complaints` - List complaints
+- `POST /api/complaints` - File complaint
+- `PUT /api/complaints/:id` - Update complaint
+- `GET /api/complaints/urgent` - Get urgent complaints (for notification bell)
+- `GET /api/users` - List users (admin)
+- `GET /api/logs` - List audit logs (admin)
 
-#### Controllers
-- **AuthController**: Authentication logic, JWT handling
-- **ContentController**: Content CRUD operations
-- **MediaController**: File upload and management
-- **UserController**: User management operations
+## DATABASE SCHEMA (PostgreSQL via Sequelize)
 
-#### Models
-- **User Model**: User data structure and methods
-- **Content Model**: Content data structure and relationships
-- **Media Model**: Media file metadata and storage info
+### User Table
+- id (UUID, PK)
+- name
+- email
+- password (hashed)
+- role (ENUM: admin, user)
+- isActive (boolean)
+- createdAt, updatedAt
 
-## API ENDPOINTS
+### Complaint Table
+- id (UUID, PK)
+- title
+- description
+- category (ENUM)
+- priority (ENUM)
+- status (ENUM)
+- submittedBy (FK: User)
+- assignedTo (FK: User, nullable)
+- department
+- attachments (JSONB)
+- tags (JSONB)
+- createdAt, updatedAt
 
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `POST /api/auth/refresh` - Refresh JWT token
-- `POST /api/auth/reset-password` - Password reset
+### Comment Table
+- id (UUID, PK)
+- complaintId (FK: Complaint)
+- userId (FK: User)
+- comment
+- createdAt
 
-### Content Management
-- `GET /api/content` - Get all content (with pagination/filtering)
-- `POST /api/content` - Create new content
-- `GET /api/content/:id` - Get specific content
-- `PUT /api/content/:id` - Update content
-- `DELETE /api/content/:id` - Delete content
-- `GET /api/content/categories` - Get content categories
-
-### Media Management
-- `POST /api/media/upload` - Upload media files
-- `GET /api/media` - Get all media files
-- `DELETE /api/media/:id` - Delete media file
-- `GET /api/media/:id` - Get media file details
-
-### User Management (Admin)
-- `GET /api/users` - Get all users
-- `PUT /api/users/:id` - Update user role/permissions
-- `DELETE /api/users/:id` - Delete user account
-
-## DATABASE SCHEMA
-
-### User Collection
-```javascript
-{
-  _id: ObjectId,
-  name: String,
-  email: String,
-  password: String (hashed),
-  role: String (admin, editor, author, contributor, subscriber),
-  avatar: String (URL),
-  isActive: Boolean,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### Content Collection
-```javascript
-{
-  _id: ObjectId,
-  title: String,
-  content: String,
-  excerpt: String,
-  author: ObjectId (ref: User),
-  status: String (draft, published, scheduled, private),
-  featuredImage: String (URL),
-  categories: [String],
-  tags: [String],
-  seo: {
-    metaTitle: String,
-    metaDescription: String,
-    keywords: [String]
-  },
-  publishedAt: Date,
-  createdAt: Date,
-  updatedAt: Date
-}
-```
-
-### Media Collection
-```javascript
-{
-  _id: ObjectId,
-  filename: String,
-  originalName: String,
-  mimeType: String,
-  size: Number,
-  url: String,
-  uploadedBy: ObjectId (ref: User),
-  altText: String,
-  description: String,
-  createdAt: Date
-}
-```
+### Log Table
+- id (UUID, PK)
+- userId (FK: User)
+- action
+- details (JSONB)
+- createdAt
 
 ## SECURITY FEATURES
-
-### Authentication & Authorization
-- JWT-based authentication
+- JWT authentication
 - Role-based access control
-- Password hashing with bcrypt
-- Token refresh mechanism
-- Session management
-
-### Data Protection
-- Input validation and sanitization
+- Password hashing (bcryptjs)
+- Input validation (express-validator)
 - CORS configuration
-- Rate limiting
-- SQL injection prevention
-- XSS protection
-
-### File Upload Security
-- File type validation
-- File size limits
-- Virus scanning (optional)
-- Secure file storage
+- SQL injection prevention (via Sequelize)
 
 ## PERFORMANCE OPTIMIZATIONS
-
-### Frontend
-- Code splitting and lazy loading
-- Image optimization and lazy loading
-- Caching strategies
-- Bundle optimization with Vite
-- React.memo for component optimization
-
-### Backend
 - Database indexing
 - Query optimization
-- Response caching
-- File compression
+- Response caching (if implemented)
 - Connection pooling
 
-## DEPLOYMENT STRATEGY
-
-### Frontend Deployment
-- Build optimization with Vite
-- Static file hosting (Netlify, Vercel, AWS S3)
-- CDN for global distribution
-- Environment variable management
-
-### Backend Deployment
-- Node.js server (Heroku, AWS, DigitalOcean)
-- Database hosting (MongoDB Atlas, AWS RDS)
-- File storage (AWS S3, Cloudinary)
-- Environment configuration
-
 ## MONITORING & LOGGING
-
-### Application Monitoring
-- Error tracking (Sentry)
-- Performance monitoring
-- User analytics
-- Server health checks
-
-### Logging
-- Request/response logging
-- Error logging
-- User activity logging
-- Security event logging
+- Audit logging (logs table)
+- Error logging (middleware)
 
 ---
-Last Updated: [Date will be updated as we progress]
-Notes: This document will be continuously updated as the project evolves and new features are added. 
+Last Updated: July 14, 2024
+Notes: This document reflects the current Complaint Management System architecture and features. Remove any legacy CMS/content/media references. 

@@ -7,6 +7,9 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   const { isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
 
+  // Debug log
+  console.log('ProtectedRoute:', { isAuthenticated, loading, user, requireAdmin, path: location.pathname });
+
   if (loading) {
     return <LoadingSpinner />;
   }

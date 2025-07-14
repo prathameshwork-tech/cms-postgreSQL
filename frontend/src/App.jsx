@@ -18,6 +18,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import UserLayout from './layout/UserLayout';
+import Account from './pages/user/Account';
 
 // Create a custom theme
 const theme = createTheme({
@@ -100,6 +101,7 @@ function App() {
                 <Route path="dashboard" element={<UserDashboard />} />
                 <Route path="file-complaint" element={<FileComplaint />} />
                 <Route path="status" element={<ComplaintStatus />} />
+                <Route path="account" element={<Account />} />
                 <Route path="*" element={<Navigate to="dashboard" replace />} />
               </Route>
               

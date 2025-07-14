@@ -72,7 +72,12 @@ export default function Header() {
     }
   }, [user?.role]);
 
-  const urgentCount = urgentComplaints.length;
+  // Filter urgent complaints for notifications
+  const filteredUrgentComplaints = urgentComplaints.filter(
+    c => (c.priority === 'High' || c.priority === 'Critical') &&
+         (c.status === 'Pending' || c.status === 'In Progress')
+  );
+  const urgentCount = filteredUrgentComplaints.length;
 
   const formatNotificationTime = (date) => {
     if (!date) return 'Unknown time';
@@ -168,9 +173,9 @@ export default function Header() {
                 Loading notifications...
               </Typography>
             </MenuItem>
-          ) : urgentComplaints.length > 0 ? (
-            urgentComplaints.map((complaint) => (
-              <MenuItem key={complaint._id} sx={{ py: 1.5, px: 2 }}>
+          ) : urgentCount > 0 ? (
+            filteredUrgentComplaints.map((complaint) => (
+              <MenuItem key={complaint.id} sx={{ py: 1.5, px: 2 }}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                   <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 600 }}>
                     {complaint.title}

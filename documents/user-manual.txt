@@ -1,161 +1,91 @@
-# USER MANUAL - CMS WEBSITE
+# USER MANUAL - COMPLAINT MANAGEMENT SYSTEM (CMS)
 
 ## OVERVIEW
-This is a Content Management System (CMS) website that allows users to create, manage, and publish content. The system provides an intuitive interface for content creators and administrators.
+This Complaint Management System (CMS) allows users to file, track, and manage complaints. The system provides dashboards for users and admins, audit logging, and notification features for urgent complaints.
 
 ## GETTING STARTED
 
 ### 1. Accessing the Website
 - Open your web browser
 - Navigate to: [Website URL will be added]
-- The website will load the main dashboard
+- The website loads the login page or dashboard (if already logged in)
 
-### 2. User Authentication
-#### First Time Users
-- Click on "Sign Up" or "Register" button
-- Fill in the registration form with:
-  - Full Name
-  - Email Address
-  - Password (minimum 8 characters)
-  - Confirm Password
-- Click "Create Account"
-- Verify your email (if required)
-
-#### Returning Users
-- Click on "Sign In" or "Login" button
-- Enter your email and password
-- Click "Sign In"
-- You'll be redirected to your dashboard
-
-### 3. Dashboard Navigation
+### 2. Dashboard Navigation
 
 #### Main Menu
-- **Dashboard**: Overview of your content and statistics
-- **Content**: Manage all your content
-- **Media**: Upload and manage images, videos, documents
-- **Users**: Manage user accounts (Admin only)
-- **Settings**: Configure your account and preferences
-- **Help**: Access documentation and support
+- **Dashboard**: Overview of your complaints and statistics
+- **Complaints**: File new complaints, view status, update or comment
+- **Logs**: (Admin only) View audit logs of system actions
+- **Users**: (Admin only) Manage user accounts
+- **Settings**: Update your profile and preferences
+- **Notifications**: View urgent complaint notifications (bell icon)
 
 #### Quick Actions
-- **Create New**: Quick access to create new content
-- **Search**: Find specific content quickly
-- **Notifications**: View system notifications
+- **File Complaint**: Quickly file a new complaint
+- **Search**: Find specific complaints
+- **Notification Bell**: See urgent/critical complaints (admin)
 
-## CONTENT MANAGEMENT
+## COMPLAINT MANAGEMENT
 
-### Creating Content
-1. Click "Create New" or navigate to Content → New
-2. Select content type:
-   - **Article**: Blog posts, news articles
-   - **Page**: Static pages like About, Contact
-   - **Product**: E-commerce products (if applicable)
-   - **Custom**: Custom content types
+### Filing a Complaint
+1. Click "File Complaint" or navigate to Complaints → New
+2. Fill in the complaint form:
+   - **Title**
+   - **Description**
+   - **Category** (choose from list)
+   - **Priority** (Low, Medium, High, Critical)
+   - **Department**
+   - **Attachments** (optional, if enabled)
+3. Click "Submit"
 
-3. Fill in the content form:
-   - **Title**: Main heading of your content
-   - **Content**: Use the rich text editor to format your content
-   - **Excerpt**: Short summary (optional)
-   - **Featured Image**: Upload or select an image
-   - **Categories**: Select relevant categories
-   - **Tags**: Add relevant tags for better organization
-   - **SEO Settings**: Meta title, description, keywords
+### Tracking and Updating Complaints
+- View all your complaints in the Complaints section
+- Click on a complaint to view details, status, and comments
+- Add comments or upload additional files (if enabled)
+- See status updates (Pending, In Progress, Resolved, Closed, Rejected)
 
-4. Publishing Options:
-   - **Draft**: Save as draft for later editing
-   - **Publish**: Make content live immediately
-   - **Schedule**: Set future publish date
-   - **Private**: Only visible to you
-
-### Editing Content
-1. Navigate to Content → All Content
-2. Find the content you want to edit
-3. Click "Edit" button
-4. Make your changes
-5. Click "Update" to save changes
-
-### Managing Content
-- **View**: Preview how content looks
-- **Edit**: Modify content
-- **Duplicate**: Create a copy
-- **Delete**: Remove content (with confirmation)
-- **Bulk Actions**: Select multiple items for batch operations
-
-## MEDIA MANAGEMENT
-
-### Uploading Media
-1. Go to Media → Add New
-2. Drag and drop files or click "Select Files"
-3. Supported formats:
-   - Images: JPG, PNG, GIF, WebP
-   - Documents: PDF, DOC, DOCX
-   - Videos: MP4, WebM
-4. Add alt text for accessibility
-5. Click "Upload"
-
-### Organizing Media
-- Create folders for better organization
-- Add tags and descriptions
-- Search and filter media files
-- Bulk edit metadata
+### Admin Complaint Management
+- View all complaints (filter by status, priority, department)
+- Assign complaints to users
+- Update status, add resolution notes
+- Delete or close complaints
+- View urgent/critical complaints via notification bell
 
 ## USER MANAGEMENT (Admin Only)
-
-### Managing Users
-- View all registered users
-- Edit user roles and permissions
+- View all users
+- Edit user roles (admin/user)
 - Activate/deactivate accounts
-- Reset passwords
-- View user activity
+- Reset user passwords
+- View user activity logs
 
-### User Roles
-- **Administrator**: Full access to all features
-- **Editor**: Can create, edit, and publish content
-- **Author**: Can create and edit their own content
-- **Contributor**: Can create content but cannot publish
-- **Subscriber**: Can only view published content
+## AUDIT LOGS (Admin Only)
+- View all system actions (login, complaint updates, user management)
+- Filter logs by user, action, or date
 
 ## SETTINGS AND PREFERENCES
-
-### Account Settings
 - Update profile information
 - Change password
 - Set notification preferences
-- Configure two-factor authentication
 
-### Site Settings (Admin Only)
-- General site information
-- SEO settings
-- Email configuration
-- Security settings
-- Backup and restore
+## FILE UPLOADS (If enabled)
+- Attach files to complaints (images, documents)
+- View/download attachments from complaint details
+
+## DATABASE MANAGEMENT (Admin/Dev Only)
+- Use pgAdmin 4 to view/manage PostgreSQL database
+- Tables: users, complaints, comments, logs
 
 ## TROUBLESHOOTING
-
-### Common Issues
-1. **Can't log in**: Check email/password, try password reset
-2. **Content not saving**: Check internet connection, try refreshing
-3. **Images not uploading**: Check file size and format
-4. **Slow performance**: Clear browser cache, check internet speed
-
-### Getting Help
-- Check the Help section for detailed guides
-- Contact support via email or chat
-- View system status for any ongoing issues
-
-## KEYBOARD SHORTCUTS
-- **Ctrl + S**: Save content
-- **Ctrl + P**: Preview content
-- **Ctrl + Z**: Undo
-- **Ctrl + Y**: Redo
-- **Ctrl + F**: Search in current page
+- **Can't log in**: Check email/password, try password reset
+- **Complaint not saving**: Check required fields, internet connection
+- **File upload issues**: Check file size/type
+- **Notification bell not clearing**: Ensure complaint status is updated
 
 ## MOBILE USAGE
 - The website is fully responsive
 - All features work on mobile devices
 - Touch-friendly interface
-- Optimized for tablets and phones
 
 ---
-Last Updated: [Date will be updated as we progress]
-Notes: This manual will be updated as new features are added to the CMS. 
+Last Updated: July 14, 2024
+Notes: This manual reflects the current Complaint Management System features. Remove any generic CMS/content/media/product instructions. 

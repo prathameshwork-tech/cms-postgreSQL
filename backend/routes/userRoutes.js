@@ -6,7 +6,8 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  getUserStats
+  getUserStats,
+  adminChangePassword
 } from '../controllers/userController.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
@@ -48,5 +49,8 @@ router.get('/:id', getUserById);
 router.post('/', validateUser, createUser);
 router.put('/:id', validateUser, updateUser);
 router.delete('/:id', deleteUser);
+
+// Add route for admin password change
+router.post('/admin/change-password', authenticateToken, adminChangePassword);
 
 export default router; 

@@ -94,7 +94,7 @@ export const useComplaints = () => {
         // Update the complaint in the list
         setComplaints(prev => 
           prev.map(complaint => 
-            complaint._id === id ? response.data : complaint
+            complaint.id === id ? response.data : complaint
           )
         );
         return { success: true, data: response.data };
@@ -123,7 +123,7 @@ export const useComplaints = () => {
         // Update the complaint in the list
         setComplaints(prev => 
           prev.map(complaint => 
-            complaint._id === id ? response.data : complaint
+            complaint.id === id ? response.data : complaint
           )
         );
         return { success: true, data: response.data };
@@ -152,7 +152,7 @@ export const useComplaints = () => {
         // Update the complaint in the list
         setComplaints(prev => 
           prev.map(complaint => 
-            complaint._id === id ? response.data : complaint
+            complaint.id === id ? response.data : complaint
           )
         );
         return { success: true, data: response.data };
@@ -179,7 +179,7 @@ export const useComplaints = () => {
       
       if (response.success) {
         // Remove the complaint from the list
-        setComplaints(prev => prev.filter(complaint => complaint._id !== id));
+        setComplaints(prev => prev.filter(complaint => complaint.id !== id));
         return { success: true };
       } else {
         setError(response.message || 'Failed to delete complaint');

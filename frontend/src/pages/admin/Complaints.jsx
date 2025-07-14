@@ -40,7 +40,7 @@ export default function Complaints() {
   useEffect(() => {
     const newStatusMap = {};
     complaints.forEach(complaint => {
-      newStatusMap[complaint._id] = complaint.status;
+      newStatusMap[complaint.id] = complaint.status;
     });
     setStatusMap(newStatusMap);
   }, [complaints]);

@@ -82,19 +82,6 @@ export default (sequelize) => {
       }
     ],
     classMethods: {
-      createLog: async function(data) {
-        return await this.create({
-          userId: data.user,
-          action: data.action,
-          details: data.details,
-          level: data.level || 'INFO',
-          ipAddress: data.ipAddress,
-          userAgent: data.userAgent,
-          resourceType: data.resource?.type,
-          resourceId: data.resource?.id,
-          metadata: data.metadata || {}
-        });
-      },
       getLogs: async function(filters = {}, page = 1, limit = 20) {
         const offset = (page - 1) * limit;
         const where = {};
@@ -124,6 +111,21 @@ export default (sequelize) => {
     Log.belongsTo(models.User, {
       foreignKey: 'userId',
       as: 'user'
+    });
+  };
+
+  // Attach createLog static method for logging
+  Log.createLog = async function(data) {
+    return await this.create({
+      userId: data.user,
+      action: data.action,
+      details: data.details,
+      level: data.level || 'INFO',
+      ipAddress: data.ipAddress,
+      userAgent: data.userAgent,
+      resourceType: data.resource?.type,
+      resourceId: data.resource?.id,
+      metadata: data.metadata || {}
     });
   };
 

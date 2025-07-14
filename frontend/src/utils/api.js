@@ -8,7 +8,7 @@ export function setLogoutHandler(fn) {
 // Create axios instance with base configuration
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  timeout: 10000,
+  timeout: 900000, // 15 minutes
   headers: {
     'Content-Type': 'application/json',
   },
@@ -191,6 +191,12 @@ export const usersAPI = {
   // Delete user
   delete: async (id) => {
     const response = await api.delete(`/users/${id}`);
+    return response.data;
+  },
+
+  // Admin change password for another user
+  adminChangePassword: async (userId, newPassword) => {
+    const response = await api.post('/users/admin/change-password', { userId, newPassword });
     return response.data;
   },
 };
