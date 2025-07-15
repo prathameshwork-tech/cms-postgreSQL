@@ -24,7 +24,7 @@ This is a full-stack Complaint Management System (CMS) built with a React fronte
 - **cors** for CORS
 - **Audit logging** (logs table)
 - **Notification bell** (urgent complaints)
-- **File uploads** (if implemented)
+
 
 ## DATA FLOW
 
@@ -35,7 +35,7 @@ Token Storage → Protected Route Access
 
 ### 2. Complaint Management Flow
 User Files Complaint → Frontend Form → API Call → Backend Validation →
-Database Storage → (Optional: File Upload) → Response to Frontend →
+Database Storage  → Response to Frontend →
 Complaint List Update → Notification Bell (for critical/urgent complaints)
 
 ### 3. Audit Logging

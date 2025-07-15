@@ -88,11 +88,13 @@ export const authAPI = {
 // API functions for complaints
 export const complaintsAPI = {
   // Get all complaints with filtering and pagination
-  getAll: async (filters = {}) => {
+  getAll: async (filters = {}, page = 1, limit = 10) => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.append(key, value);
     });
+    params.append('page', page);
+    params.append('limit', limit);
     const response = await api.get(`/complaints?${params.toString()}`);
     return response.data;
   },
@@ -203,12 +205,14 @@ export const usersAPI = {
 
 // API functions for logs
 export const logsAPI = {
-  // Get all logs
-  getAll: async (filters = {}) => {
+  // Get all logs (paginated)
+  getAll: async (filters = {}, page = 1, limit = 10) => {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value) params.append(key, value);
     });
+    params.append('page', page);
+    params.append('limit', limit);
     const response = await api.get(`/logs?${params.toString()}`);
     return response.data;
   },

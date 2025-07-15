@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, Select, MenuItem, InputAdornment, Alert, CircularProgress } from '@mui/material';
+import { Box, TextField, Select, MenuItem, InputAdornment, Alert, CircularProgress, Pagination } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ComplaintsTable from '../../components/ComplaintsTable';
 import ComplaintDetailsModal from '../../components/ComplaintDetailsModal';
 import { useComplaints } from '../../hooks/useComplaints';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 
 export default function Complaints() {
   const { 
@@ -76,38 +79,17 @@ export default function Complaints() {
   };
   const formatComplaintDate = (date) => {
     if (!date) return 'Invalid Date';
-    
-    const complaintDate = new Date(date);
-    const now = new Date();
-    const diffInMs = now - complaintDate;
-    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
-    // Less than 1 minute
-    if (diffInMinutes < 1) {
-      return 'now';
+    const complaintDate = dayjs(date);
+    const now = dayjs();
+    if (complaintDate.isSame(now, 'day')) {
+      const diffMinutes = now.diff(complaintDate, 'minute');
+      if (diffMinutes < 1) return 'now';
+      if (diffMinutes < 60) return `${diffMinutes} min ago`;
+      const diffHours = now.diff(complaintDate, 'hour');
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
     }
-    // Less than 1 hour
-    else if (diffInMinutes < 60) {
-      return `${diffInMinutes} min ago`;
-    }
-    // Less than 3 hours
-    else if (diffInHours < 3) {
-      return `${diffInHours} hr${diffInHours > 1 ? 's' : ''} ago`;
-    }
-    // Less than 24 hours (same day)
-    else if (diffInHours < 24) {
-      return 'today';
-    }
-    // Less than 48 hours (yesterday)
-    else if (diffInDays < 2) {
-      return 'yesterday';
-    }
-    // More than 48 hours - show actual date
-    else {
-      return complaintDate.toLocaleDateString();
-    }
+    // Not today: show 'DD MMM'
+    return complaintDate.format('DD MMM');
   };
   const priorityColors = { 
     Critical: 'error', 
@@ -117,6 +99,10 @@ export default function Complaints() {
   };
   const statusBgColors = { 'Pending': '#fff3cd', 'In Progress': '#d1ecf1', 'Resolved': '#d4edda', 'Rejected': '#f8d7da' };
   
+  const page = pagination?.page || 1;
+  const pageSize = pagination?.limit || 10;
+  const total = pagination?.total || complaints.length;
+
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, width: '100%', maxWidth: 1200, mx: 'auto' }}>
       {/* Error Alert */}
@@ -216,6 +202,16 @@ export default function Complaints() {
             pagination={pagination}
             onPageChange={(page) => updatePagination({ page })}
           />
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+            <Pagination
+              count={Math.ceil(total / pageSize)}
+              page={page}
+              onChange={(_, value) => updatePagination({ page: value })}
+              color="primary"
+              shape="rounded"
+              size="medium"
+            />
+          </Box>
           <ComplaintDetailsModal open={modalOpen} onClose={handleCloseModal} complaint={selectedComplaint} />
         </Box>
       </Box>

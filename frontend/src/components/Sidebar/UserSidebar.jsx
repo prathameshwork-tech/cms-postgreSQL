@@ -59,7 +59,7 @@ export default function UserSidebar() {
             </Typography>
           </Box>
           <Typography variant="caption" color="text.secondary" sx={{ ml: 4, mt: 0 }}>
-            User Portal
+            Employee Portal
           </Typography>
         </Box>
         <Divider />

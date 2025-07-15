@@ -1,9 +1,9 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import StatCard from '../../components/StatCard';
 import ChartBox from '../../components/ChartBox';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import EmptyState from '../../components/common/EmptyState';
-import { Box, Grid, Paper, Typography, Fade, Alert, Button, Avatar, Chip, Card, CardContent } from '@mui/material';
+import { Box, Grid, Paper, Typography, Fade, Alert, Button, Chip, Card, CardContent } from '@mui/material';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
@@ -19,6 +19,8 @@ import { useComplaints } from '../../hooks/useComplaints';
 import { useUsers } from '../../hooks/useUsers';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { CircularProgress, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Chip as MuiChip, IconButton } from '@mui/material';
+import HistoryIcon from '@mui/icons-material/History';
 
 function formatComplaintDate(dateStr) {
   const now = new Date();
@@ -64,6 +66,10 @@ export default function Dashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [statusMap, setStatusMap] = useState({});
+  const [recentLogs, setRecentLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(true);
+  const intervalRef = useRef(null);
+  const isMounted = useRef(true);
 
   const loading = complaintsLoading || usersLoading;
   const error = complaintsError || usersError;
@@ -102,6 +108,58 @@ export default function Dashboard() {
       setStatusMap(Object.fromEntries(recentComplaints.map(c => [c.id, c.status])));
     }
   }, [recentComplaints]);
+
+  // Helper to render action text based on role
+  function getRoleActionText(log) {
+    const action = (log.friendlyAction || log.action) || '';
+    const role = log.user?.role;
+    if (/user logged in/i.test(action)) {
+      return role === 'admin' ? 'Admin logged in' : 'Employee logged in';
+    }
+    if (/user logged out/i.test(action)) {
+      return role === 'admin' ? 'Admin logged out' : 'Employee logged out';
+    }
+    if (/user registered/i.test(action)) {
+      return role === 'admin' ? 'Admin registered' : 'Employee registered';
+    }
+    if (/user created/i.test(action)) {
+      return role === 'admin' ? 'Admin created' : 'Employee created';
+    }
+    if (/user updated/i.test(action)) {
+      return role === 'admin' ? 'Admin updated' : 'Employee updated';
+    }
+    if (/user deleted/i.test(action)) {
+      return role === 'admin' ? 'Admin deleted' : 'Employee deleted';
+    }
+    if (role === 'user') {
+      return action.replace(/\buser\b/gi, 'employee');
+    }
+    return action;
+  }
+
+  // Fetch recent logs (limit 5)
+  const fetchRecentLogs = async () => {
+    setLogsLoading(true);
+    try {
+      const response = await logsAPI.getAll({}, 1, 5);
+      if (isMounted.current) setRecentLogs(response.logs || []);
+    } catch (err) {
+      if (isMounted.current) setRecentLogs([]);
+    } finally {
+      if (isMounted.current) setLogsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    isMounted.current = true;
+    fetchRecentLogs();
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(fetchRecentLogs, 5000); // Poll every 5s
+    return () => {
+      isMounted.current = false;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   const statCards = useMemo(() => [
     {
@@ -247,14 +305,13 @@ export default function Dashboard() {
         </Grid>
       </Grid>
 
-      {/* User Management Section */}
+      {/* Recent Logs Section */}
       <Box sx={{ mb: 4, mt: 4 }}>
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 3 }}>
           <Typography variant="h5" sx={{ color: '#1976d2', fontWeight: 600, textAlign: 'center', width: '100%' }}>
             Recent Users
           </Typography>
         </Box>
-        
         <Grid container spacing={2}>
           {recentUsers.length > 0 ? (
             recentUsers.map((user) => (
@@ -290,7 +347,6 @@ export default function Dashboard() {
                         </Typography>
                       </Box>
                     </Box>
-                    
                     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                       <Chip 
                         label={user.role} 
@@ -305,7 +361,6 @@ export default function Dashboard() {
                         variant="outlined"
                       />
                     </Box>
-                    
                     {user.department && (
                       <Typography variant="body2" color="text.secondary">
                         Department: {user.department}

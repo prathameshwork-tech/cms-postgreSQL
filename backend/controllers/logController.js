@@ -3,7 +3,27 @@ import { getModels } from '../config/db.js';
 export const getAllLogs = async (req, res, next) => {
   try {
     const { Log, User } = getModels();
-    const logs = await Log.findAll({
+    // Pagination params
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    // Filtering (optional, keep same logic as before)
+    const where = {};
+    // Date range filter
+    const { fromDate, toDate } = req.query;
+    if (fromDate && toDate) {
+      where.createdAt = { $between: [new Date(fromDate), new Date(toDate)] };
+    } else if (fromDate) {
+      where.createdAt = { $gte: new Date(fromDate) };
+    } else if (toDate) {
+      where.createdAt = { $lte: new Date(toDate) };
+    }
+    // Add more filters if needed
+
+    // Fetch logs with pagination
+    const { rows: logs, count: total } = await Log.findAndCountAll({
+      where,
       include: [
         {
           model: User,
@@ -11,7 +31,9 @@ export const getAllLogs = async (req, res, next) => {
           attributes: ['id', 'name', 'email', 'role']
         }
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      offset,
+      limit
     });
 
     // Map action codes to user-friendly strings
@@ -39,7 +61,12 @@ export const getAllLogs = async (req, res, next) => {
       friendlyAction: actionMap[log.action] || log.action
     }));
 
-    res.json(logsWithFriendlyAction);
+    res.json({
+      logs: logsWithFriendlyAction,
+      total,
+      page,
+      pageSize: limit
+    });
   } catch (err) {
     next(err);
   }

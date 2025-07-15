@@ -189,7 +189,7 @@ export const updateUser = async (req, res) => {
 // @access  Private (Admin only)
 export const deleteUser = async (req, res) => {
   try {
-    const { User, Log } = getModels();
+    const { User, Log, Complaint } = getModels();
     const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({
@@ -204,6 +204,25 @@ export const deleteUser = async (req, res) => {
         message: 'Cannot delete your own account'
       });
     }
+    // Delete all complaints where the user is submitter, assignee, or resolver
+    const deletedComplaints = await Complaint.destroy({
+      where: {
+        [Complaint.sequelize.Op.or]: [
+          { submittedBy: user.id },
+          { assignedTo: user.id },
+          { resolvedBy: user.id }
+        ]
+      }
+    });
+    // Log the deletion of complaints
+    if (Log && Log.createLog && deletedComplaints > 0) {
+      await Log.createLog({
+        user: req.user.id,
+        action: 'DELETE_COMPLAINT',
+        details: `Deleted ${deletedComplaints} complaints related to user: ${user.name} (${user.email})`,
+        resource: { type: 'USER', id: user.id }
+      });
+    }
     await user.destroy();
     // Log the action
     if (Log && Log.createLog) {
@@ -216,7 +235,7 @@ export const deleteUser = async (req, res) => {
     }
     res.json({
       success: true,
-      message: 'User deleted successfully'
+      message: 'User and related complaints deleted successfully'
     });
   } catch (error) {
     console.error('Delete user error:', error);

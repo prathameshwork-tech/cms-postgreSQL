@@ -126,7 +126,7 @@ export default function Header() {
         <TextField
           size="small"
           variant="outlined"
-          placeholder="Search complaints, users..."
+          placeholder="Search complaints, employees..."
           sx={{
             background: '#f7f7f7',
             borderRadius: 2,
@@ -208,7 +208,7 @@ export default function Header() {
         
         {/* Role Chip */}
         <Chip 
-          label={`${user?.role === 'admin' ? 'Admin' : 'User'} Panel v1.0`}
+          label={`${user?.role === 'admin' ? 'Admin' : 'Employee'} Panel v1.0`}
           size="small" 
           sx={{ 
             background: user?.role === 'admin' ? '#e3f2fd' : '#f3e5f5', 

@@ -155,10 +155,10 @@ const Login = ({ role }) => {
           filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.10))'
         }} />
         <Typography component="h1" variant="h4" fontWeight={700} color="primary.main" gutterBottom sx={{ letterSpacing: 0.5 }}>
-          Login as {role === 'admin' ? 'Admin' : 'User'}
+          Login as {role === 'admin' ? 'Admin' : 'Employee'}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3, fontWeight: 500, fontSize: 17 }}>
-          Welcome back! Please sign in to your {role === 'admin' ? 'admin' : 'user'} account.
+          Welcome back! Please sign in to your {role === 'admin' ? 'admin' : 'employee'} account.
         </Typography>
 
         {error && (

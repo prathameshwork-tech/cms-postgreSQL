@@ -55,6 +55,7 @@ export default function Users() {
   const [formErrors, setFormErrors] = useState({});
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const departments = [
     'IT', 'HR', 'Finance', 'Marketing', 'Operations', 
@@ -140,7 +141,7 @@ export default function Users() {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (userId === currentUser._id) {
+    if (userId === currentUser.id) {
       alert('You cannot delete your own account');
       return;
     }
@@ -148,6 +149,8 @@ export default function Users() {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         await deleteUser(userId);
+        setSuccessMessage('User and related complaints deleted successfully.');
+        setTimeout(() => setSuccessMessage(''), 4000);
       } catch (error) {
         console.error('Error deleting user:', error);
       }
@@ -180,7 +183,7 @@ export default function Users() {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ color: '#1976d2', fontWeight: 700 }}>
-          User Management
+          Employee Management
         </Typography>
         <Button
           variant="contained"
@@ -188,7 +191,7 @@ export default function Users() {
           onClick={() => handleOpenDialog()}
           sx={{ borderRadius: 2 }}
         >
-          Add User
+          Add Employee
         </Button>
       </Box>
 
@@ -196,6 +199,11 @@ export default function Users() {
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
+        </Alert>
+      )}
+      {successMessage && (
+        <Alert severity="success" sx={{ mb: 3 }}>
+          {successMessage}
         </Alert>
       )}
 
@@ -243,7 +251,7 @@ export default function Users() {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Chip
-                        label={user.role}
+                        label={user.role === 'admin' ? 'Admin' : 'Employee'}
                         size="small"
                         color={getRoleColor(user.role)}
                         variant="outlined"
@@ -275,9 +283,9 @@ export default function Users() {
                         </IconButton>
                         <IconButton
                           size="small"
-                          onClick={() => handleDeleteUser(user._id)}
+                          onClick={() => handleDeleteUser(user.id)}
                           sx={{ color: 'error.main' }}
-                          disabled={user._id === currentUser._id}
+                          disabled={user.id === currentUser.id}
                           title="Delete User"
                         >
                           <DeleteIcon />
@@ -303,7 +311,7 @@ export default function Users() {
       {/* Add/Edit User Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {editingUser ? 'Edit User' : 'Add New User'}
+          {editingUser ? 'Edit Employee' : 'Add New Employee'}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
@@ -333,7 +341,7 @@ export default function Users() {
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
                 label="Role"
               >
-                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="user">Employee</MenuItem>
                 <MenuItem value="admin">Admin</MenuItem>
               </Select>
             </FormControl>

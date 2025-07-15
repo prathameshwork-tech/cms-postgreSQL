@@ -17,7 +17,7 @@ const drawerWidth = 220;
 const navItems = [
   { label: 'Dashboard', icon: <DashboardIcon />, path: '/admin' },
   { label: 'Complaints', icon: <ListAltIcon />, path: '/admin/complaints' },
-  { label: 'User Management', icon: <PeopleIcon />, path: '/admin/users' },
+  { label: 'Employee Management', icon: <PeopleIcon />, path: '/admin/users' },
   { label: 'Logs', icon: <ReceiptLongIcon />, path: '/admin/logs' },
   { label: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
 ];

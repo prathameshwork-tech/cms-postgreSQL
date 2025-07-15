@@ -83,7 +83,7 @@ export default function HomePage() {
               }}
               fullWidth
             >
-              Login as User
+              Login as Employee
             </Button>
           </Box>
         </CardContent>
