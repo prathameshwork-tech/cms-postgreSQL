@@ -237,11 +237,7 @@ export default function ComplaintStatus() {
               
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">Status</Typography>
-                <Chip 
-                  label={selectedComplaint.status} 
-                  color={getStatusColor(selectedComplaint.status)}
-                  sx={{ mt: 0.5 }}
-                />
+                <Typography variant="body1">{selectedComplaint.status}</Typography>
               </Box>
               
               <Box>
@@ -261,6 +257,12 @@ export default function ComplaintStatus() {
                   <Typography variant="body2">Resolved at: {formatDate(selectedComplaint.resolvedAt)}</Typography>
                 )}
               </Box>
+              {selectedComplaint.status === 'Resolved' && selectedComplaint.resolver && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary">Handled By:</Typography>
+                  <Typography variant="body1">{selectedComplaint.resolver.name}</Typography>
+                </Box>
+              )}
             </Box>
           )}
         </DialogContent>
