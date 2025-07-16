@@ -55,6 +55,11 @@ export default (sequelize) => {
       defaultValue: {},
       allowNull: false
     },
+    handledBy: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+      field: 'handled_by'
+    },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -125,7 +130,8 @@ export default (sequelize) => {
       userAgent: data.userAgent,
       resourceType: data.resource?.type,
       resourceId: data.resource?.id,
-      metadata: data.metadata || {}
+      metadata: data.metadata || {},
+      handledBy: data.handledBy || null
     });
   };
 

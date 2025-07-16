@@ -19,7 +19,7 @@ const navItems = [
   { label: 'Complaints', icon: <ListAltIcon />, path: '/admin/complaints' },
   { label: 'Employee Management', icon: <PeopleIcon />, path: '/admin/users' },
   { label: 'Logs', icon: <ReceiptLongIcon />, path: '/admin/logs' },
-  { label: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
+  { label: 'Settings', icon: <SettingsIcon />, path: '/admin/settings', superadminOnly: true },
 ];
 
 export default function Sidebar() {
@@ -28,9 +28,9 @@ export default function Sidebar() {
   const { user, logout } = useAuth();
   
   // Filter navigation items based on user role
-  const filteredNavItems = user?.role === 'admin' 
-    ? navItems 
-    : navItems.filter(item => item.label !== 'User Management' && item.label !== 'Logs');
+  const filteredNavItems = user?.email === 'admin@techcorp.com' || user?.role === 'superadmin'
+    ? navItems
+    : navItems.filter(item => !item.superadminOnly);
 
   const handleLogout = () => {
     logout();

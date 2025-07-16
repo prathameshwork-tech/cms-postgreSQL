@@ -40,7 +40,7 @@ export default function ComplaintDetailsModal({ open, onClose, complaint }) {
               <strong>ID:</strong>
             </Typography>
             <Typography variant="body1" sx={{ mb: 1 }}>
-              {complaint._id || 'N/A'}
+              {complaint.id || complaint._id || 'N/A'}
             </Typography>
           </Box>
 
@@ -49,7 +49,9 @@ export default function ComplaintDetailsModal({ open, onClose, complaint }) {
               <strong>Submitted By:</strong>
             </Typography>
             <Typography variant="body1" sx={{ mb: 1 }}>
-              {complaint.submittedBy?.name || 'Unknown User'}
+              {complaint.submitter
+                ? `${complaint.submitter.name} (${complaint.submitter.email})`
+                : 'Unknown User'}
             </Typography>
           </Box>
 
@@ -114,6 +116,18 @@ export default function ComplaintDetailsModal({ open, onClose, complaint }) {
                   <Chip key={index} label={tag} size="small" variant="outlined" />
                 ))}
               </Box>
+            </Box>
+          )}
+
+          {/* Admin who resolved/rejected the complaint */}
+          {(complaint.status === 'Resolved' || complaint.status === 'Rejected') && complaint.resolver && (
+            <Box sx={{ gridColumn: '1 / -1' }}>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Handled By:</strong>
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                {complaint.resolver.name} ({complaint.resolver.email})
+              </Typography>
             </Box>
           )}
         </Box>

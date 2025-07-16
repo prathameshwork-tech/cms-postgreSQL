@@ -201,6 +201,11 @@ export const usersAPI = {
     const response = await api.post('/users/admin/change-password', { userId, newPassword });
     return response.data;
   },
+
+  superadminChangePassword: async ({ email, currentPassword, newPassword }) => {
+    const response = await api.post('/users/superadmin/change-password', { email, currentPassword, newPassword });
+    return response.data;
+  },
 };
 
 // API functions for logs

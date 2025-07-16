@@ -10,7 +10,8 @@ import {
   addComment,
   getComplaintStats,
   getUrgentComplaints,
-  autoEscalatePriority
+  autoEscalatePriority,
+  getComplaintHistory
 } from '../controllers/complaintController.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
@@ -71,6 +72,7 @@ router.get('/:id', getComplaintById);
 router.put('/:id', validateComplaint, updateComplaint);
 router.patch('/:id/status', validateStatusUpdate, updateComplaintStatus);
 router.post('/:id/comments', validateComment, addComment);
+router.get('/:id/history', getComplaintHistory);
 
 // Admin only routes
 router.delete('/:id', requireAdmin, deleteComplaint);

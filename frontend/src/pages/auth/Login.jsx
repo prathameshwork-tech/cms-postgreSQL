@@ -107,11 +107,22 @@ const Login = ({ role }) => {
     try {
       const result = await login(formData.email, formData.password);
       if (result.success) {
-        // Redirect based on user role
-        if (result.user?.role === 'admin') {
-          navigate('/admin', { replace: true });
+        if (role === 'admin') {
+          if (result.user?.role !== 'admin') {
+            setErrors({ email: 'Only admin users can log in here.' });
+          } else if (result.user?.isActive === false) {
+            setErrors({ email: 'Account is deactivated. Please contact support.' });
+          } else {
+            navigate('/admin', { replace: true });
+          }
         } else {
-          navigate('/user/dashboard', { replace: true });
+          if (result.user?.isActive === false) {
+            setErrors({ email: 'Account is deactivated. Please contact support.' });
+          } else if (result.user?.role === 'admin') {
+            navigate('/admin', { replace: true });
+          } else {
+            navigate('/user/dashboard', { replace: true });
+          }
         }
       }
     } catch (error) {

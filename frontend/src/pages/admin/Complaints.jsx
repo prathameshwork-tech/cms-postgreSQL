@@ -55,8 +55,8 @@ export default function Complaints() {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const result = await updateComplaintStatus(id, newStatus);
-      if (result.success) {
+      const updatedComplaint = await updateComplaintStatus(id, newStatus);
+      if (updatedComplaint) {
         setStatusMap(prev => ({ ...prev, [id]: newStatus }));
       }
     } catch (error) {

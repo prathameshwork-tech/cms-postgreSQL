@@ -245,7 +245,7 @@ export const createComplaint = async (req, res) => {
 // @access  Private
 export const updateComplaint = async (req, res) => {
   try {
-    const { Complaint, Log } = getModels();
+    const { Complaint, Log, User } = getModels();
     const complaint = await Complaint.findByPk(req.params.id);
 
     if (!complaint) {
@@ -263,25 +263,39 @@ export const updateComplaint = async (req, res) => {
       });
     }
 
-    const updatedComplaint = await Complaint.update(req.body, {
+    await Complaint.update(req.body, {
       where: { id: req.params.id },
-      returning: true,
-      plain: true
     });
 
-    if (Log && Log.createLog) {
-      await Log.createLog({
-        user: req.user.id,
-        action: 'UPDATE_COMPLAINT',
-        details: `Updated complaint: ${updatedComplaint[1].title}`,
-        resource: { type: 'COMPLAINT', id: updatedComplaint[1].id }
-      });
+    let logData = {
+      user: req.user.id,
+      action: 'UPDATE_COMPLAINT',
+      details: `Updated complaint: ${complaint.title}`,
+      resource: { type: 'COMPLAINT', id: complaint.id }
+    };
+    if (req.user.role === 'admin') {
+      const admin = await User.findByPk(req.user.id);
+      logData.handledBy = admin?.name;
+      logData.metadata = { adminName: admin?.name, adminEmail: admin?.email };
     }
+    if (Log && Log.createLog) {
+      await Log.createLog(logData);
+    }
+
+    // Fetch updated complaint with associations
+    const updatedComplaint = await Complaint.findByPk(req.params.id, {
+      include: [
+        { model: User, as: 'submitter', attributes: ['id', 'name', 'email', 'department'] },
+        { model: User, as: 'assignee', attributes: ['id', 'name', 'email', 'department'] },
+        { model: User, as: 'resolver', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'comments', attributes: ['id', 'comment', 'createdAt'] }
+      ]
+    });
 
     res.json({
       success: true,
       message: 'Complaint updated successfully',
-      data: updatedComplaint[1]
+      data: updatedComplaint
     });
   } catch (error) {
     console.error('Update complaint error:', error);
@@ -298,7 +312,7 @@ export const updateComplaint = async (req, res) => {
 // @access  Private (Admin only)
 export const deleteComplaint = async (req, res) => {
   try {
-    const { Complaint, Log } = getModels();
+    const { Complaint, Log, User } = getModels();
     const complaint = await Complaint.findByPk(req.params.id);
 
     if (!complaint) {
@@ -318,12 +332,20 @@ export const deleteComplaint = async (req, res) => {
 
     await Complaint.destroy({ where: { id: req.params.id } });
 
+    // Fetch admin details
+    const admin = await User.findByPk(req.user.id);
+
     if (Log && Log.createLog) {
       await Log.createLog({
         user: req.user.id,
         action: 'DELETE_COMPLAINT',
         details: `Deleted complaint: ${complaint.title}`,
-        resource: { type: 'COMPLAINT', id: complaint.id }
+        resource: { type: 'COMPLAINT', id: complaint.id },
+        metadata: {
+          adminName: admin?.name,
+          adminEmail: admin?.email
+        },
+        handledBy: admin?.name
       });
     }
 
@@ -346,7 +368,7 @@ export const deleteComplaint = async (req, res) => {
 // @access  Private
 export const updateComplaintStatus = async (req, res) => {
   try {
-    const { Complaint, Log } = getModels();
+    const { Complaint, Log, User } = getModels();
     const { status, resolution } = req.body;
     const complaint = await Complaint.findByPk(req.params.id);
 
@@ -366,34 +388,49 @@ export const updateComplaintStatus = async (req, res) => {
     }
 
     const updateData = { status };
-    
-    if (status === 'Resolved' && resolution) {
-      updateData.resolution = {
-        resolvedBy: req.user.id,
-        resolvedAt: new Date(),
-        resolution
-      };
+    if (status === 'Resolved') {
+      updateData.resolvedAt = new Date();
+      updateData.resolvedBy = req.user.id;
+      if (resolution) {
+        updateData.resolution = resolution;
+      }
     }
 
-    const updatedComplaint = await Complaint.update(updateData, {
+    await Complaint.update(updateData, {
       where: { id: req.params.id },
-      returning: true,
-      plain: true
     });
+
+    // Fetch admin details
+    const admin = await User.findByPk(req.user.id);
 
     if (Log && Log.createLog) {
       await Log.createLog({
         user: req.user.id,
         action: 'UPDATE_COMPLAINT',
         details: `Updated complaint status to: ${status}`,
-        resource: { type: 'COMPLAINT', id: updatedComplaint[1].id }
+        resource: { type: 'COMPLAINT', id: complaint.id },
+        metadata: {
+          adminName: admin?.name,
+          adminEmail: admin?.email,
+          status
+        },
+        handledBy: admin?.name
       });
     }
+
+    // After updating status, fetch the complaint with all user associations
+    const updatedComplaint = await Complaint.findByPk(req.params.id, {
+      include: [
+        { model: User, as: 'submitter', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'assignee', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'resolver', attributes: ['id', 'name', 'email'] }
+      ]
+    });
 
     res.json({
       success: true,
       message: 'Complaint status updated successfully',
-      data: updatedComplaint[1]
+      data: updatedComplaint
     });
   } catch (error) {
     console.error('Update complaint status error:', error);
@@ -410,7 +447,7 @@ export const updateComplaintStatus = async (req, res) => {
 // @access  Private
 export const addComment = async (req, res) => {
   try {
-    const { Complaint, Log } = getModels();
+    const { Complaint, Log, User } = getModels();
     const { comment } = req.body;
     const complaint = await Complaint.findByPk(req.params.id);
 
@@ -431,22 +468,30 @@ export const addComment = async (req, res) => {
 
     await complaint.addComment(req.user.id, comment);
 
+    let logData = {
+      user: req.user.id,
+      action: 'UPDATE_COMPLAINT',
+      details: `Added comment to complaint: ${complaint.title}`,
+      resource: { type: 'COMPLAINT', id: complaint.id }
+    };
+    if (req.user.role === 'admin') {
+      const admin = await User.findByPk(req.user.id);
+      logData.handledBy = admin?.name;
+      logData.metadata = { adminName: admin?.name, adminEmail: admin?.email };
+    }
+    if (Log && Log.createLog) {
+      await Log.createLog(logData);
+    }
+
+    // Fetch updated complaint with associations
     const updatedComplaint = await Complaint.findByPk(req.params.id, {
       include: [
-        { model: User, as: 'submitter', attributes: ['id', 'name', 'email'] },
-        { model: User, as: 'assignee', attributes: ['id', 'name', 'email'] },
+        { model: User, as: 'submitter', attributes: ['id', 'name', 'email', 'department'] },
+        { model: User, as: 'assignee', attributes: ['id', 'name', 'email', 'department'] },
+        { model: User, as: 'resolver', attributes: ['id', 'name', 'email'] },
         { model: User, as: 'comments', attributes: ['id', 'comment', 'createdAt'] }
       ]
     });
-
-    if (Log && Log.createLog) {
-      await Log.createLog({
-        user: req.user.id,
-        action: 'UPDATE_COMPLAINT',
-        details: `Added comment to complaint: ${complaint.title}`,
-        resource: { type: 'COMPLAINT', id: complaint.id }
-      });
-    }
 
     res.json({
       success: true,
@@ -513,5 +558,66 @@ export const getComplaintStats = async (req, res) => {
       message: 'Error fetching complaint statistics',
       error: error.message
     });
+  }
+};
+
+// @desc    Get complaint history (timeline)
+// @route   GET /api/complaints/:id/history
+// @access  Private (admin or complaint owner)
+export const getComplaintHistory = async (req, res) => {
+  try {
+    const { Complaint, Log, Comment, User } = getModels();
+    const complaint = await Complaint.findByPk(req.params.id, {
+      include: [
+        { model: User, as: 'submitter', attributes: ['id', 'name', 'email'] }
+      ]
+    });
+    if (!complaint) {
+      return res.status(404).json({ success: false, message: 'Complaint not found' });
+    }
+    // Only allow admin or complaint owner
+    if (req.user.role !== 'admin' && complaint.submittedBy !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Access denied' });
+    }
+    // Fetch all logs for this complaint
+    const logs = await Log.findAll({
+      where: { resourceType: 'COMPLAINT', resourceId: complaint.id },
+      include: [{ model: User, as: 'user', attributes: ['id', 'name', 'email', 'role'] }],
+      order: [['createdAt', 'ASC']]
+    });
+    // Fetch all comments for this complaint
+    const comments = await Comment.findAll({
+      where: { complaintId: complaint.id },
+      include: [{ model: User, as: 'user', attributes: ['id', 'name', 'email', 'role'] }],
+      order: [['createdAt', 'ASC']]
+    });
+    // Initial creation event
+    const creationEvent = {
+      type: 'CREATED',
+      createdAt: complaint.createdAt,
+      by: complaint.submitter,
+      details: `Complaint created: ${complaint.title}`
+    };
+    // Map logs and comments to timeline events
+    const logEvents = logs.map(log => ({
+      type: log.action,
+      createdAt: log.createdAt,
+      by: log.user,
+      details: log.details,
+      handledBy: log.handledBy || null,
+      metadata: log.metadata || null
+    }));
+    const commentEvents = comments.map(comment => ({
+      type: 'COMMENT',
+      createdAt: comment.createdAt,
+      by: comment.user,
+      details: comment.comment
+    }));
+    // Combine and sort all events
+    const timeline = [creationEvent, ...logEvents, ...commentEvents].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    res.json({ success: true, data: timeline });
+  } catch (error) {
+    console.error('Get complaint history error:', error);
+    res.status(500).json({ success: false, message: 'Error fetching complaint history', error: error.message });
   }
 }; 

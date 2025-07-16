@@ -28,6 +28,10 @@ export const getAllUsers = async (req, res) => {
         { department: { [User.sequelize.Op.iLike]: `%${search}%` } }
       ];
     }
+    // Only show active users by default
+    if (typeof req.query.isActive === 'undefined') {
+      where.isActive = true;
+    }
     const offset = (parseInt(page) - 1) * parseInt(limit);
     const order = [[sortBy, sortOrder.toUpperCase()]];
     const { rows: users, count: total } = await User.findAndCountAll({
@@ -189,7 +193,7 @@ export const updateUser = async (req, res) => {
 // @access  Private (Admin only)
 export const deleteUser = async (req, res) => {
   try {
-    const { User, Log, Complaint } = getModels();
+    const { User, Log } = getModels();
     const user = await User.findByPk(req.params.id);
     if (!user) {
       return res.status(404).json({
@@ -204,44 +208,27 @@ export const deleteUser = async (req, res) => {
         message: 'Cannot delete your own account'
       });
     }
-    // Delete all complaints where the user is submitter, assignee, or resolver
-    const deletedComplaints = await Complaint.destroy({
-      where: {
-        [Complaint.sequelize.Op.or]: [
-          { submittedBy: user.id },
-          { assignedTo: user.id },
-          { resolvedBy: user.id }
-        ]
-      }
-    });
-    // Log the deletion of complaints
-    if (Log && Log.createLog && deletedComplaints > 0) {
-      await Log.createLog({
-        user: req.user.id,
-        action: 'DELETE_COMPLAINT',
-        details: `Deleted ${deletedComplaints} complaints related to user: ${user.name} (${user.email})`,
-        resource: { type: 'USER', id: user.id }
-      });
-    }
-    await user.destroy();
+    // Deactivate user instead of deleting
+    await user.update({ isActive: false });
+    // Optionally, you can also unassign this user from complaints, etc.
     // Log the action
     if (Log && Log.createLog) {
       await Log.createLog({
         user: req.user.id,
         action: 'DELETE_USER',
-        details: `Deleted user: ${user.name} (${user.email})`,
+        details: `Deactivated user: ${user.name} (${user.email})`,
         resource: { type: 'USER', id: user.id }
       });
     }
     res.json({
       success: true,
-      message: 'User and related complaints deleted successfully'
+      message: 'User deactivated successfully'
     });
   } catch (error) {
     console.error('Delete user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error deleting user',
+      message: 'Error deactivating user',
       error: error.message
     });
   }
@@ -336,5 +323,35 @@ export const adminChangePassword = async (req, res) => {
   } catch (error) {
     console.error('Admin password change error:', error);
     res.status(500).json({ message: 'Server error', error: error.message, stack: error.stack });
+  }
+};
+
+// Add this controller function at the end of the file:
+export const superadminChangePassword = async (req, res) => {
+  try {
+    const { User } = getModels();
+    const { email, currentPassword, newPassword } = req.body;
+    if (!email || !currentPassword || !newPassword) {
+      return res.status(400).json({ success: false, message: 'All fields are required.' });
+    }
+    // Only allow for system admin
+    if (email !== 'admin@techcorp.com') {
+      return res.status(403).json({ success: false, message: 'Forbidden.' });
+    }
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+    }
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+    res.json({ success: true, message: 'Password changed successfully.' });
+  } catch (error) {
+    console.error('Superadmin password change error:', error);
+    res.status(500).json({ success: false, message: 'Error changing password.' });
   }
 }; 

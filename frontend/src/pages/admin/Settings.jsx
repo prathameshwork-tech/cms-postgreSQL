@@ -1,37 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { usersAPI } from '../../utils/api';
 
 export default function Settings() {
-  const { register, handleSubmit, reset, formState: { errors, isDirty } } = useForm({
+  const { register, handleSubmit, reset, formState: { errors, isDirty }, getValues } = useForm({
     defaultValues: {
       name: '',
       email: '',
       password: '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
     }
   });
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [superadmin, setSuperadmin] = useState(null);
+  const [loadingSuperadmin, setLoadingSuperadmin] = useState(true);
+  const [superadminError, setSuperadminError] = useState('');
 
+  useEffect(() => {
+    async function fetchSuperadmin() {
+      setLoadingSuperadmin(true);
+      setSuperadminError('');
+      try {
+        const res = await usersAPI.getAll({ email: 'admin@techcorp.com' });
+        if (res.success && res.data.length > 0) {
+          setSuperadmin(res.data[0]);
+        } else {
+          setSuperadmin(null);
+          setSuperadminError('System Administrator not found.');
+        }
+      } catch (err) {
+        setSuperadminError('Failed to load System Administrator info.');
+      } finally {
+        setLoadingSuperadmin(false);
+      }
+    }
+    fetchSuperadmin();
+  }, []);
+
+  // In the onSubmit handler, call the new superadmin password change endpoint
   const onSubmit = async (data) => {
     setError('');
     setSuccess(false);
     setLoading(true);
     try {
-      const result = await usersAPI.create({ ...data, role: 'admin' });
+      const result = await usersAPI.superadminChangePassword({
+        email: 'admin@techcorp.com',
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword
+      });
       if (result.success) {
         setSuccess(true);
         reset();
       } else {
-        setError(result.message || 'Failed to add admin');
+        setError(result.message || 'Failed to change password');
       }
     } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to add admin');
+      setError(err?.response?.data?.message || 'Failed to change password');
     } finally {
       setLoading(false);
-      setTimeout(() => setSuccess(false), 2000);
     }
   };
 
@@ -46,35 +77,10 @@ export default function Settings() {
       }}>
         Admin Settings
       </Box>
-      <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ display: 'flex', flexDirection: 'column', gap: 2, background: '#fff', borderRadius: 3, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1px solid #f0f0f0', p: { xs: 2, md: 4 } }}>
-        <TextField
-          label="Name"
-          {...register('name', { required: 'Name is required' })}
-          error={!!errors.name}
-          helperText={errors.name?.message}
-          fullWidth
-        />
-        <TextField
-          label="Email"
-          type="email"
-          {...register('email', { required: 'Email is required' })}
-          error={!!errors.email}
-          helperText={errors.email?.message}
-          fullWidth
-        />
-        <TextField
-          label="Password"
-          type="password"
-          {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Password must be at least 6 characters' } })}
-          error={!!errors.password}
-          helperText={errors.password?.message}
-          fullWidth
-        />
-        <Button type="submit" variant="contained" disabled={!isDirty || loading} sx={{ mt: 1 }}>
-          {loading ? 'Saving...' : 'Add Admin'}
-        </Button>
-        {success && <Typography color="success.main" sx={{ mt: 1 }}>Admin added successfully!</Typography>}
-        {error && <Typography color="error.main" sx={{ mt: 1 }}>{error}</Typography>}
+      {/* System Administrator Info */}
+      <Box sx={{ mb: 3, background: '#f7f7f7', borderRadius: 2, p: 2, border: '1px solid #e0e0e0' }}>
+        <Typography variant="subtitle2" color="primary.main" sx={{ fontWeight: 700 }}>System Administrator</Typography>
+        <Typography><strong>Email:</strong> admin@techcorp.com</Typography>
       </Box>
     </Box>
   );

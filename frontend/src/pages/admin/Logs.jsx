@@ -15,7 +15,7 @@ export default function Logs() {
   const [selectedLog, setSelectedLog] = useState(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(8); // Show 8 logs per page by default
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
@@ -28,11 +28,11 @@ export default function Logs() {
       if (search) filters.search = search;
       if (fromDate) filters.fromDate = fromDate;
       if (toDate) filters.toDate = toDate;
-      const response = await logsAPI.getAll(filters, pageNum, pageSize);
+      const response = await logsAPI.getAll(filters, pageNum, 8); // Always fetch 8 per page
       setLogs(response.logs);
       setTotal(response.total);
       setPage(response.page);
-      setPageSize(response.pageSize);
+      setPageSize(8);
     } catch (err) {
       setError('Failed to fetch logs');
     } finally {
@@ -98,6 +98,11 @@ export default function Logs() {
       return action.replace(/\buser\b/gi, 'employee');
     }
     return action;
+  }
+
+  // Helper to get admin name for complaint actions
+  function getAdminName(log) {
+    return log?.metadata?.adminName || log?.user?.name || 'Unknown';
   }
 
   const handleViewDetails = (log) => {
@@ -189,7 +194,8 @@ export default function Logs() {
                   <TableRow sx={{ background: '#f7f7f7' }}>
                     <TableCell sx={{ fontWeight: 700, width: 40 }}>#</TableCell>
                     <TableCell sx={{ fontWeight: 700, minWidth: 180 }}>Timestamp</TableCell>
-                    <TableCell sx={{ fontWeight: 700, minWidth: 160 }}>User</TableCell>
+                    <TableCell sx={{ fontWeight: 700, minWidth: 160 }}>Performed By</TableCell>
+                    <TableCell sx={{ fontWeight: 700, minWidth: 160 }}>Handled By</TableCell>
                     <TableCell sx={{ fontWeight: 700, minWidth: 80 }}>Role</TableCell>
                     <TableCell sx={{ fontWeight: 700, minWidth: 140 }}>Action</TableCell>
                     <TableCell sx={{ fontWeight: 700, minWidth: 120 }}>Details</TableCell>
@@ -207,6 +213,7 @@ export default function Logs() {
                       <TableCell>{(page - 1) * pageSize + idx + 1}</TableCell>
                       <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatLogDate(log.timestamp || log.createdAt)}</TableCell>
                       <TableCell>{log.user?.name || 'Unknown'}</TableCell>
+                      <TableCell>{log.handledBy || log.user?.name || 'Unknown'}</TableCell>
                       <TableCell>
                         <Chip label={log.user?.role === 'admin' ? 'Admin' : log.user?.role === 'user' ? 'Employee' : 'N/A'} color={log.user?.role === 'admin' ? 'primary' : log.user?.role === 'user' ? 'secondary' : 'default'} size="small" sx={{ textTransform: 'capitalize', fontWeight: 700 }} />
                       </TableCell>
@@ -216,7 +223,7 @@ export default function Logs() {
                       </TableCell>
                       <TableCell>
                         <Button variant="outlined" size="small" onClick={() => handleViewDetails(log)} sx={{ fontWeight: 600, borderRadius: 2, px: 1.5, minWidth: 0, fontSize: 13, height: 28 }}>
-                          View Details
+                        Details
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -226,7 +233,7 @@ export default function Logs() {
             </TableContainer>
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
               <Pagination
-                count={Math.ceil(total / pageSize)}
+                count={Math.ceil(total / 8)}
                 page={page}
                 onChange={(_, value) => setPage(value)}
                 color="primary"
@@ -252,13 +259,23 @@ export default function Logs() {
                 <Typography variant="body1" sx={{ mb: 1 }}>{formatLogDate(selectedLog.timestamp || selectedLog.createdAt)}</Typography>
               </Box>
               <Box>
-                <Typography variant="body2" color="text.secondary"><b>User:</b></Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>{selectedLog.user?.name || 'Unknown'}</Typography>
+                <Typography variant="body2" color="text.secondary"><b>Performed By:</b></Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{selectedLog.user?.name ? `${selectedLog.user.name}${selectedLog.user.email ? ` (${selectedLog.user.email})` : ''}` : 'Unknown'}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" color="text.secondary"><b>Handled By:</b></Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>{selectedLog.handledBy || selectedLog.user?.name || 'Unknown'}</Typography>
               </Box>
               <Box>
                 <Typography variant="body2" color="text.secondary"><b>Role:</b></Typography>
                 <Chip label={selectedLog.user?.role === 'admin' ? 'Admin' : selectedLog.user?.role === 'user' ? 'Employee' : 'N/A'} color={selectedLog.user?.role === 'admin' ? 'primary' : selectedLog.user?.role === 'user' ? 'secondary' : 'default'} size="small" sx={{ textTransform: 'capitalize', fontWeight: 700, ml: 0.5 }} />
               </Box>
+              {selectedLog && (['DELETE_COMPLAINT', 'UPDATE_COMPLAINT'].includes(selectedLog.action)) && (
+                <Box>
+                  <Typography variant="body2" color="text.secondary"><b>Admin:</b></Typography>
+                  <Typography variant="body1" sx={{ mb: 1 }}>{getAdminName(selectedLog)}</Typography>
+                </Box>
+              )}
               <Box sx={{ gridColumn: '1 / -1' }}>
                 <Typography variant="body2" color="text.secondary"><b>Details:</b></Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>{selectedLog.details || 'N/A'}</Typography>

@@ -104,6 +104,9 @@ export const login = async (req, res) => {
       });
     }
 
+    // Debug: print the user object being returned
+    console.log('Login response user:', user.toJSON());
+
     res.json({
       success: true,
       message: 'Login successful',

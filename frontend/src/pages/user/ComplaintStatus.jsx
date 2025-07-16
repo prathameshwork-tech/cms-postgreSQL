@@ -132,17 +132,17 @@ export default function ComplaintStatus() {
         overflowX: 'auto',
       }}>
         <Box sx={{ p: { xs: 2, md: 4 } }}>
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ width: '100%', overflowX: 'auto' }}>
+            <Table size="small" sx={{ minWidth: 800 }}>
               <TableHead>
                 <TableRow sx={{ background: '#f7f7f7' }}>
-                  <TableCell sx={{ fontWeight: 700 }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Title</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Department</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Priority</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#222', py: 1, width: 220, maxWidth: 260, minWidth: 180, whiteSpace: 'nowrap' }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#222', py: 1, width: 80, maxWidth: 120, minWidth: 50, overflow: 'hidden', textOverflow: 'ellipsis' }}>Title</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#222', py: 1 }}>Department</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#222', py: 1 }}>Status</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#222', py: 1 }}>Date</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#222', py: 1 }}>Priority</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#222', py: 1 }}>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -160,41 +160,40 @@ export default function ComplaintStatus() {
                   </TableRow>
                 ) : (
                   filteredComplaints.map((complaint) => (
-                    <TableRow key={complaint._id} hover>
-                      <TableCell>{complaint._id}</TableCell>
-                      <TableCell sx={{ fontWeight: 500 }}>{complaint.title}</TableCell>
-                      <TableCell>{complaint.department}</TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={complaint.status} 
-                          color={getStatusColor(complaint.status)}
-                          size="small"
-                        />
+                    <TableRow key={complaint.id || complaint._id}>
+                      <TableCell sx={{ py: 1, fontFamily: 'monospace', fontSize: 13 }}>
+                        {(() => {
+                          const id = complaint.id || complaint._id || '';
+                          if (id.length > 18) {
+                            return <span>{id.slice(0, 18)}<br />{id.slice(18)}</span>;
+                          }
+                          return id;
+                        })()}
                       </TableCell>
-                      <TableCell>
-                        <Chip 
-                          label={complaint.priority} 
-                          color={getPriorityColor(complaint.priority)}
-                          size="small"
-                        />
+                      <TableCell sx={{ py: 1 }}>{complaint.title}</TableCell>
+                      <TableCell sx={{ py: 1 }}>{complaint.department}</TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <Chip label={complaint.status} color={getStatusColor(complaint.status)} size="small" sx={{ borderRadius: 2, fontWeight: 700, px: 1, fontSize: 12, height: 24, width: 100, justifyContent: 'center' }} />
                       </TableCell>
-                      <TableCell>{formatDate(complaint.createdAt)}</TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
+                      <TableCell sx={{ py: 1 }}>{formatDate(complaint.createdAt)}</TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <Chip label={complaint.priority} color={getPriorityColor(complaint.priority)} size="small" sx={{ borderRadius: 2, fontWeight: 700, px: 1, fontSize: 12, height: 24, width: 80, justifyContent: 'center' }} />
+                      </TableCell>
+                      <TableCell sx={{ py: 1 }}>
+                        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
                           <Button
                             variant="outlined"
                             size="small"
-                            startIcon={<VisibilityIcon />}
-                            onClick={() => handleViewDetails(complaint)}
                             sx={{ minWidth: 0 }}
+                            onClick={() => handleViewDetails(complaint)}
                           >
-                            View Details
+                            <VisibilityIcon />
                           </Button>
                           <Button
                             variant="outlined"
                             color="error"
                             size="small"
-                            onClick={() => handleDeleteComplaint(complaint._id)}
+                            onClick={() => handleDeleteComplaint(complaint.id || complaint._id)}
                             sx={{ minWidth: 0, px: 1.2 }}
                           >
                             <DeleteIcon fontSize="small" />
@@ -218,7 +217,7 @@ export default function ComplaintStatus() {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">Complaint ID</Typography>
-                <Typography variant="h6">{selectedComplaint._id}</Typography>
+                <Typography variant="h6">{selectedComplaint.id || selectedComplaint._id}</Typography>
               </Box>
               
               <Box>
@@ -254,14 +253,13 @@ export default function ComplaintStatus() {
                 />
               </Box>
               
+              {/* History Section */}
               <Box>
-                <Typography variant="subtitle2" color="text.secondary">Date Filed</Typography>
-                <Typography variant="body1">{formatDate(selectedComplaint.createdAt)}</Typography>
-              </Box>
-              
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary">Submitted By</Typography>
-                <Typography variant="body1">{selectedComplaint.submittedBy?.name || 'N/A'}</Typography>
+                <Typography variant="subtitle2" color="text.secondary">History</Typography>
+                <Typography variant="body2">Filed at: {formatDate(selectedComplaint.createdAt)}</Typography>
+                {selectedComplaint.resolvedAt && (
+                  <Typography variant="body2">Resolved at: {formatDate(selectedComplaint.resolvedAt)}</Typography>
+                )}
               </Box>
             </Box>
           )}

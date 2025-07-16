@@ -51,6 +51,10 @@ module.exports = {
         defaultValue: {},
         allowNull: false
       },
+      handled_by: {
+        type: Sequelize.STRING(100),
+        allowNull: true
+      },
       user_id: {
         type: Sequelize.UUID,
         allowNull: false,

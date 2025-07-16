@@ -49,6 +49,7 @@ export default function Users() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     role: 'user',
     department: ''
   });
@@ -68,6 +69,7 @@ export default function Users() {
       setFormData({
         name: user.name,
         email: user.email,
+        password: '', // No password for editing
         role: user.role,
         department: user.department || ''
       });
@@ -76,6 +78,7 @@ export default function Users() {
       setFormData({
         name: '',
         email: '',
+        password: '',
         role: 'user',
         department: ''
       });
@@ -90,6 +93,7 @@ export default function Users() {
     setFormData({
       name: '',
       email: '',
+      password: '',
       role: 'user',
       department: ''
     });
@@ -109,6 +113,13 @@ export default function Users() {
       errors.email = 'Please enter a valid email';
     }
 
+    // Password is required only when creating a new user
+    if (!editingUser && !formData.password.trim()) {
+      errors.password = 'Password is required';
+    } else if (!editingUser && formData.password.length < 6) {
+      errors.password = 'Password must be at least 6 characters';
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -123,6 +134,11 @@ export default function Users() {
         role: formData.role,
         department: formData.department
       };
+
+      // Add password only when creating a new user
+      if (!editingUser) {
+        userData.password = formData.password;
+      }
 
       if (editingUser) {
         const result = await updateUser(editingUser.id, userData);
@@ -174,6 +190,9 @@ export default function Users() {
     setPage(0);
   };
 
+  // Filter out the System Administrator (superadmin) from the users list
+  const filteredUsers = users.filter(user => user.email !== 'admin@techcorp.com' && user.role !== 'superadmin');
+
   if (loading) {
     return <LoadingSpinner message="Loading users..." />;
   }
@@ -223,7 +242,7 @@ export default function Users() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users
+              {filteredUsers
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((user) => (
                   <TableRow key={user._id} hover>
@@ -300,7 +319,7 @@ export default function Users() {
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={users.length}
+          count={filteredUsers.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -328,11 +347,28 @@ export default function Users() {
               label="Email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={e => {
+                setFormData({ ...formData, email: e.target.value });
+                if (formErrors.email && /\S+@\S+\.\S+/.test(e.target.value)) {
+                  setFormErrors({ ...formErrors, email: undefined });
+                }
+              }}
               error={!!formErrors.email}
               helperText={formErrors.email}
               fullWidth
             />
+            
+            {!editingUser && (
+              <TextField
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                error={!!formErrors.password}
+                helperText={formErrors.password}
+                fullWidth
+              />
+            )}
             
             <FormControl fullWidth>
               <InputLabel>Role</InputLabel>
